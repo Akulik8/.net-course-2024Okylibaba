@@ -11,12 +11,5 @@ namespace BankSystem.Domain.Models
         public string Name { get; set; }
         public decimal ExchangeRate { get; set; }
         public string Code { get; set; }
-
-        public Currency(string name, decimal exchangeRate, string code)
-        {
-            Name=name;
-            ExchangeRate = exchangeRate;
-            Code = code;
-        }
     }
 }

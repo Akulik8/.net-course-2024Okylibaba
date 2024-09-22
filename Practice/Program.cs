@@ -7,19 +7,6 @@ namespace Practice
     {
         static void Main(string[] args)
         {
-               /*В папку “Domain” добавить новый проект по шаблону “Библиотека
-               классов”, с именем “BankSystem.Domain”, в котором добавляем папку
-               “Models”. В папке “Models”, спроектировать и реализовать свои типы
-               “Person” (человек), и дочерние типы “Employee” (сотрудник), “Client”
-               (клиент), структуру “Currency” (валюта).
-               В папку “Tools” добавить проект (шаблон консольное приложение)
-               “Practice”, в рамках которого реализуем методы:
-               а) метод, обновляющий контракт сотрудника. Принимает на вход
-               сотрудника и создает контракт (свойство класса “Employee”, строка) на
-               основе его данных. Результат присваивается обратно в тело сотрудника,
-               свойству “Contract”;
-               б) метод обновляющий сущность валюты. (Метод принимает на вход
-               экземпляр структуры “Currency”, меняет значение ее свойств); */
             Employee employee1 = new Employee
             {
                 Name = "Никита",
@@ -36,7 +23,13 @@ namespace Practice
             UpdateContract(employee1);
             Console.WriteLine(employee1.Contract);
 
-            Currency currency = new Currency ("Доллар США" ,16.35m, "USD");
+            Currency currency = new Currency
+            { 
+                Name = "Доллар США",
+                ExchangeRate = 16.35m,
+                Code = "USD"
+            };
+
             UpdateCurrency(ref currency, "Евро", 19.2m, "EUR");
             Console.WriteLine($"Обновлённая валюта: {currency.Name}, Курс: {currency.ExchangeRate}, Код: {currency.Code}");
 
@@ -47,18 +40,13 @@ namespace Practice
 
             static void UpdateCurrency(ref Currency currency, string newName, decimal newRate, string newCode)
             {
-                currency = new Currency(newName, newRate, newCode);
+                currency = new Currency
+                { 
+                    Name= newName,
+                    ExchangeRate= newRate,
+                    Code= newCode
+                };
             }
-
-                /*В папку “Application” добавить проект “BankSystem.App”, в него
-                добавить новую папку “Services”, в которой создаем класс “BankService”, в
-                рамках которого реализуем методы:
-                а) метод расчета зарплаты владельцев банка = (прибыль банка -
-                расходы) / количество владельцев (при условии, что владелец тоже
-                сущность Employee и ЗП это int)
-                б) метод преобразования клиента банка в сотрудника, метод
-                принимает на вход сущность “Client”, приводит его к типу “Employee” и
-                возвращает его в качестве результата для дальнейшей работы.*/
 
             Employee employee2 = new Employee
             {
