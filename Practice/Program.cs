@@ -1,5 +1,6 @@
 ﻿using BankSystem.App.Services;
 using BankSystem.Domain.Models;
+using System.Diagnostics;
 
 namespace Practice
 {
@@ -11,7 +12,7 @@ namespace Practice
             {
                 Name = "Никита",
                 Surname = "Окулибаба",
-                PhoneNumber = 77960929,
+                PhoneNumber = "+37377960929",
                 Passport = "IПР 123456789",
                 Address = "г. Тирасполь, ул. Краснодонская",
                 Date = new DateOnly(2003, 9, 26),
@@ -24,7 +25,7 @@ namespace Practice
             Console.WriteLine(employee1.Contract);
 
             Currency currency = new Currency
-            { 
+            {
                 Name = "Доллар США",
                 ExchangeRate = 16.35m,
                 Code = "USD"
@@ -38,13 +39,21 @@ namespace Practice
                 employee.Contract = $"Контракт для {employee.Surname} {employee.Name}, Должность: {employee.Position}, Зарплата: {employee.Salary} руб., Дата начала работы: {employee.DateStartWork}";
             }
 
+            static void UpdateContracts(List<Employee> employees)
+            {
+                foreach (Employee employee in employees)
+                {
+                    employee.Contract = $"Контракт для {employee.Surname} {employee.Name}, Должность: {employee.Position}, Зарплата: {employee.Salary} руб., Дата начала работы: {employee.DateStartWork}";
+                }
+            }
+
             static void UpdateCurrency(ref Currency currency, string newName, decimal newRate, string newCode)
             {
                 currency = new Currency
-                { 
-                    Name= newName,
-                    ExchangeRate= newRate,
-                    Code= newCode
+                {
+                    Name = newName,
+                    ExchangeRate = newRate,
+                    Code = newCode
                 };
             }
 
@@ -52,7 +61,7 @@ namespace Practice
             {
                 Name = "Игорь",
                 Surname = "Афанасьев",
-                PhoneNumber = 77867829,
+                PhoneNumber = "+37377867829",
                 Passport = "IПР 123159789",
                 Address = "г. Тирасполь, ул. Каховская",
                 Date = new DateOnly(1997, 4, 6),
@@ -64,7 +73,7 @@ namespace Practice
             {
                 Name = "Дима",
                 Surname = "Топалов",
-                PhoneNumber = 77511829,
+                PhoneNumber = "+37377511829",
                 Passport = "IПР 321159789",
                 Address = "г. Тирасполь, ул. Чапаева",
                 Date = new DateOnly(1981, 2, 15),
@@ -75,7 +84,7 @@ namespace Practice
             Employee[] employees = [employee1, employee2, employee3];
 
             List<Employee> ownersList = new List<Employee>();
-            
+
             foreach (var employee in employees)
             {
                 if (employee.Position == "Владелец")
@@ -93,7 +102,7 @@ namespace Practice
             {
                 Name = "Пётр",
                 Surname = "Иванов",
-                PhoneNumber = 77760606,
+                PhoneNumber = "+37377760606",
                 Passport = "IПР 123321123",
                 Address = "г. Тирасполь, ул. Юности",
                 Date = new DateOnly(2010, 10, 16),
@@ -103,6 +112,72 @@ namespace Practice
             Employee newEmployee = bankService.ConvertClientToEmployee(client, "Бухгалтер", 5000);
             UpdateContract(newEmployee);
             Console.WriteLine($"Новый сотрудник: {newEmployee.Surname} {newEmployee.Name}, Должность: {newEmployee.Position}");
-        }    
+
+            var generator = new TestDataGenerator();
+            List<Client> clientsList = generator.GenerateClients(1000);
+            Dictionary<string, Client> clientsDictionary = generator.GenerateClientDictionary(clientsList);
+            List<Employee> employeesList = generator.GenerateEmployees(1000);
+            UpdateContracts(employeesList);
+
+            Random random = new Random();
+            string phoneNumbertoFind = clientsList[random.Next(clientsList.Count)].PhoneNumber;
+
+            Stopwatch sw = Stopwatch.StartNew();
+            var resultClientInList = clientsList.Find(e => e.PhoneNumber == phoneNumbertoFind);
+            sw.Stop();
+            if (resultClientInList != null)
+            {
+                Console.WriteLine($"Клиент найден: {resultClientInList.Surname} {resultClientInList.Name}, телефон: {resultClientInList.PhoneNumber}");
+                Console.WriteLine($"Поиск в списке занял: {sw.ElapsedTicks} тиков");
+            }
+            else
+            {
+                Console.WriteLine("Клиент не найден");
+            }
+
+            sw.Restart();
+            var resultClientInDictionary = clientsDictionary[phoneNumbertoFind];
+            sw.Stop();
+            if (resultClientInDictionary != null)
+            {
+                Console.WriteLine($"Клиент найден: {resultClientInDictionary.Surname} {resultClientInDictionary.Name}, телефон: {resultClientInDictionary.PhoneNumber}");
+                Console.WriteLine($"Поиск в словаре занял: {sw.ElapsedTicks} тиков");
+            }
+            else
+            {
+                Console.WriteLine("Клиент не найден");
+            }
+
+            int ageLimit = 25;
+            List<Client> clientsUnderAge = clientsList.Where(c => GetAge(c.Date, DateTime.Today) < ageLimit).ToList();
+            foreach (var youngClient in clientsUnderAge)
+            {
+                Console.WriteLine($"Клиент: {youngClient.Surname} {youngClient.Name}, день рождения: {youngClient.Date}, телефон: {youngClient.PhoneNumber}");
+            }
+
+            static int GetAge(DateOnly dateOfBirth, DateTime today)
+            {
+                int age = today.Year - dateOfBirth.Year;
+                if (dateOfBirth > DateOnly.FromDateTime(today.AddYears(-age)))
+                    age--;
+                return age;
+            }
+
+            var minSalaryEmployee = employeesList.MinBy(e => e.Salary);
+            Console.WriteLine($"Сотрудник с минимальной зарплатой: {minSalaryEmployee.Surname} {minSalaryEmployee.Name}, зарплата: {minSalaryEmployee.Salary}");
+
+            for (int i = 0; i < 20; i++)
+            {
+                sw.Restart();
+                var clientByLastOrDefault = clientsDictionary.LastOrDefault();
+                sw.Stop();
+                Console.WriteLine($"Поиск методом LastOrDefault занял: {sw.ElapsedTicks} тиков");
+
+                sw.Restart();
+                var clientByKey = clientsDictionary[clientByLastOrDefault.Value.PhoneNumber];
+                sw.Stop();
+                Console.WriteLine($"Поиск по ключу занял: {sw.ElapsedTicks} тиков");
+            }
+        }
     }
 }
