@@ -16,7 +16,7 @@ namespace BankSystem.App.Services
             var clientFaker = new Faker<Client>("ru")
                 .RuleFor(c => c.Name, f => f.Name.FirstName())
                 .RuleFor(c => c.Surname, f => f.Name.LastName())
-                .RuleFor(c => c.PhoneNumber, f => $"+37377{f.UniqueIndex.ToString("500000")}")
+                .RuleFor(c => c.PhoneNumber, f => f.Phone.PhoneNumber())
                 .RuleFor(c => c.Passport, f => $"IПР {f.UniqueIndex.ToString("000000000")}")
                 .RuleFor(c => c.Address, f => $"г. Тирасполь, {f.Address.StreetName()}")
                 .RuleFor(c => c.Date, f => DateOnly.FromDateTime(f.Date.Past(90, DateTime.Now.AddYears(-18)).Date))
@@ -28,13 +28,7 @@ namespace BankSystem.App.Services
 
         public Dictionary<string, Client> GenerateClientDictionary(List<Client> clients)
         {
-            var clientDictionary = new Dictionary<string, Client>();
-
-            foreach (var client in clients)
-            {
-                clientDictionary.Add(client.PhoneNumber, client);
-            }
-
+            var clientDictionary = clients.ToDictionary(client => client.PhoneNumber, client => client);
             return clientDictionary;
         }
 
@@ -43,7 +37,7 @@ namespace BankSystem.App.Services
             var employeeFaker = new Faker<Employee>("ru")
                 .RuleFor(e => e.Name, f => f.Name.FirstName())
                 .RuleFor(e => e.Surname, f => f.Name.LastName())
-                .RuleFor(e => e.PhoneNumber, f => $"+37377{f.UniqueIndex.ToString("500000")}")
+                .RuleFor(e => e.PhoneNumber, f => f.Phone.PhoneNumber())
                 .RuleFor(e => e.Passport, f => $"IПР {f.UniqueIndex.ToString("000000000")}")
                 .RuleFor(e => e.Address, f => $"г. Тирасполь, {f.Address.StreetName()}")
                 .RuleFor(e => e.Date, f => DateOnly.FromDateTime(f.Date.Past(90, DateTime.Now.AddYears(-18)).Date))

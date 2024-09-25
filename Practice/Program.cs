@@ -39,6 +39,14 @@ namespace Practice
                 employee.Contract = $"Контракт для {employee.Surname} {employee.Name}, Должность: {employee.Position}, Зарплата: {employee.Salary} руб., Дата начала работы: {employee.DateStartWork}";
             }
 
+            static void UpdateContracts(List<Employee> employees)
+            {
+                foreach (Employee employee in employees)
+                {
+                    employee.Contract = $"Контракт для {employee.Surname} {employee.Name}, Должность: {employee.Position}, Зарплата: {employee.Salary} руб., Дата начала работы: {employee.DateStartWork}";
+                }
+            }
+
             static void UpdateCurrency(ref Currency currency, string newName, decimal newRate, string newCode)
             {
                 currency = new Currency
@@ -109,12 +117,10 @@ namespace Practice
             List<Client> clientsList = generator.GenerateClients(1000);
             Dictionary<string, Client> clientsDictionary = generator.GenerateClientDictionary(clientsList);
             List<Employee> employeesList = generator.GenerateEmployees(1000);
-            foreach (var employee in employeesList) 
-            {
-                UpdateContract(employee);
-            }
-                        
-            string phoneNumbertoFind = "+37377500529";
+            UpdateContracts(employeesList);
+
+            Random random = new Random();
+            string phoneNumbertoFind = clientsList[random.Next(clientsList.Count)].PhoneNumber;
 
             Stopwatch sw = Stopwatch.StartNew();
             var resultClientInList = clientsList.Find(e => e.PhoneNumber == phoneNumbertoFind);
@@ -152,7 +158,7 @@ namespace Practice
             static int GetAge(DateOnly dateOfBirth, DateTime today)
             {
                 int age = today.Year - dateOfBirth.Year;
-                if (dateOfBirth > DateOnly.FromDateTime(today.AddYears(-age))) 
+                if (dateOfBirth > DateOnly.FromDateTime(today.AddYears(-age)))
                     age--;
                 return age;
             }
@@ -160,16 +166,18 @@ namespace Practice
             var minSalaryEmployee = employeesList.MinBy(e => e.Salary);
             Console.WriteLine($"Сотрудник с минимальной зарплатой: {minSalaryEmployee.Surname} {minSalaryEmployee.Name}, зарплата: {minSalaryEmployee.Salary}");
 
-            sw.Restart();
-            var clientByLastOrDefault = clientsDictionary.LastOrDefault();
-            sw.Stop();
-            Console.WriteLine($"Поиск методом LastOrDefault занял: {sw.ElapsedTicks} тиков");
+            for (int i = 0; i < 20; i++)
+            {
+                sw.Restart();
+                var clientByLastOrDefault = clientsDictionary.LastOrDefault();
+                sw.Stop();
+                Console.WriteLine($"Поиск методом LastOrDefault занял: {sw.ElapsedTicks} тиков");
 
-            string key = clientsDictionary.LastOrDefault().Value.PhoneNumber;
-            sw.Restart();
-            var clientByKey = clientsDictionary[key];
-            sw.Stop();
-            Console.WriteLine($"Поиск по ключу занял: {sw.ElapsedTicks} тиков");
+                sw.Restart();
+                var clientByKey = clientsDictionary[clientByLastOrDefault.Value.PhoneNumber];
+                sw.Stop();
+                Console.WriteLine($"Поиск по ключу занял: {sw.ElapsedTicks} тиков");
+            }
         }
     }
 }
