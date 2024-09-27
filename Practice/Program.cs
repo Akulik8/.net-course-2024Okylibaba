@@ -117,7 +117,6 @@ namespace Practice
             List<Client> clientsList = generator.GenerateClients(1000);
             Dictionary<string, Client> clientsDictionary = generator.GenerateClientDictionary(clientsList);
             List<Employee> employeesList = generator.GenerateEmployees(1000);
-            UpdateContracts(employeesList);
 
             Random random = new Random();
             string phoneNumbertoFind = clientsList[random.Next(clientsList.Count)].PhoneNumber;
