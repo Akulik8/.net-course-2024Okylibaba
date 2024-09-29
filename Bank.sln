@@ -19,6 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Practice", "Practice\Practi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankSystem.App", "BankSystem.App\BankSystem.App.csproj", "{9FC02AE7-002F-49F1-A635-669C51F63599}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.App.Tests", "BancSystem.App.Tests\BankSystem.App.Tests.csproj", "{B9256CCC-494B-4A78-AD38-A84275923CA5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9FC02AE7-002F-49F1-A635-669C51F63599} = {9FC02AE7-002F-49F1-A635-669C51F63599}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +42,10 @@ Global
 		{9FC02AE7-002F-49F1-A635-669C51F63599}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FC02AE7-002F-49F1-A635-669C51F63599}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FC02AE7-002F-49F1-A635-669C51F63599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9256CCC-494B-4A78-AD38-A84275923CA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9256CCC-494B-4A78-AD38-A84275923CA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9256CCC-494B-4A78-AD38-A84275923CA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9256CCC-494B-4A78-AD38-A84275923CA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +54,7 @@ Global
 		{9716795C-F136-468B-96A7-DBBACB57E7AA} = {CC2CEA6C-A444-45FC-B43B-F59AF4499A38}
 		{21F059A1-E124-441E-ACAB-8827D2A4A2A9} = {BCDD88E8-992E-4798-A26E-12FB1F55E5A5}
 		{9FC02AE7-002F-49F1-A635-669C51F63599} = {2DAB60D7-5A6B-4CEC-A89D-2D0EA563B334}
+		{B9256CCC-494B-4A78-AD38-A84275923CA5} = {2DAB60D7-5A6B-4CEC-A89D-2D0EA563B334}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0097849E-39FC-49C1-B05C-98D472240A58}
