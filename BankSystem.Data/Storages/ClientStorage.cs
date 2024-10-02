@@ -47,7 +47,7 @@ namespace BankSystem.Data.Storages
 
         public List<Client> GetAllClients()
         {
-            return _clients;
+            return new List<Client>(_clients);
         }
     }
 }

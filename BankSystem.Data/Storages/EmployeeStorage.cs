@@ -47,7 +47,7 @@ namespace BankSystem.Data.Storages
 
         public List<Employee> GetAllEmployees()
         {
-            return _employees;
+            return new List<Employee>(_employees);
         }
     }
 }
