@@ -37,7 +37,8 @@ namespace BankSystem.Domain.Models
         }
         public override int GetHashCode()
         {
-            return Name.GetHashCode() + Surname.GetHashCode() + PhoneNumber.GetHashCode() + Passport.GetHashCode() + Address.GetHashCode() + Date.GetHashCode() + AccountNumber.GetHashCode() + AccountNumber.GetHashCode() + Balance.GetHashCode();
+            return (Name?.GetHashCode() ?? 0) + (Surname?.GetHashCode() ?? 0) + (PhoneNumber?.GetHashCode() ?? 0) +
+         (Passport?.GetHashCode() ?? 0) + (Address?.GetHashCode() ?? 0) + Date.GetHashCode() + AccountNumber.GetHashCode() + Balance.GetHashCode();
         }
     }
 }

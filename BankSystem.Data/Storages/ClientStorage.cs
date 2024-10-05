@@ -9,16 +9,16 @@ namespace BankSystem.Data.Storages
 {
     public class ClientStorage
     {
-        private readonly List<Client> _clients;
+        private readonly Dictionary<Client, List<Account>> _clients;
 
         public ClientStorage()
         {
-            _clients = new List<Client>();
+            _clients = new Dictionary<Client, List<Account>>();
         }
 
-        public void AddClient(Client client)
+        public void AddClient(Client client, List<Account> accounts)
         {
-            _clients.Add(client);
+            _clients.Add(client, accounts);
         }
 
         public void RemoveClient(Client client)
@@ -26,14 +26,31 @@ namespace BankSystem.Data.Storages
             _clients.Remove(client);
         }
 
+        public void AddAccount(Client client, Account account)
+        {
+            _clients[client].Add(account);
+        }
+
+        public void UpdateAccount(Client client, Account oldAccount, Account newAccount) 
+        {
+            Account updatedAccount = _clients[client].FirstOrDefault(a => a.Currency.Equals(oldAccount.Currency));
+            updatedAccount.Amount = newAccount.Amount;
+            updatedAccount.Currency = newAccount.Currency;
+        }
+
+        public void RemoveAccount(Client client, Account account) 
+        {
+            _clients[client].Remove(account);
+        }
+
         public Client GetYoungestClient()
         {
-            return _clients.OrderBy(c => c.Date).LastOrDefault();
+            return _clients.Keys.OrderBy(c => c.Date).LastOrDefault();
         }
 
         public Client GetOldestClient()
         {
-            return _clients.OrderBy(c => c.Date).FirstOrDefault();
+            return _clients.Keys.OrderBy(c => c.Date).FirstOrDefault();
         }
 
         public double GetAverageAge()
@@ -42,12 +59,12 @@ namespace BankSystem.Data.Storages
                 return 0;
 
             DateTime today = DateTime.Today;
-            return _clients.Average(c => (today.Year - c.Date.Year) - (today.DayOfYear < c.Date.DayOfYear ? 1 : 0));
+            return _clients.Keys.Average(c => (today.Year - c.Date.Year) - (today.DayOfYear < c.Date.DayOfYear ? 1 : 0));
         }
 
-        public List<Client> GetAllClients()
+        public Dictionary<Client, List<Account>> GetAllClients()
         {
-            return new List<Client>(_clients);
+            return new Dictionary<Client, List<Account>>(_clients);
         }
     }
 }
