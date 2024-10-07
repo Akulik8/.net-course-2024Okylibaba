@@ -34,8 +34,16 @@ namespace BankSystem.Data.Storages
         public void UpdateAccount(Client client, Account oldAccount, Account newAccount) 
         {
             Account updatedAccount = _clients[client].FirstOrDefault(a => a.Currency.Equals(oldAccount.Currency));
-            updatedAccount.Amount = newAccount.Amount;
-            updatedAccount.Currency = newAccount.Currency;
+
+            if (updatedAccount != null)
+            {
+                updatedAccount.Amount = newAccount.Amount;
+                updatedAccount.Currency = newAccount.Currency;
+            }
+            else
+            {
+                throw new Exception("Счет не найден.");
+            }
         }
 
         public void RemoveAccount(Client client, Account account) 
@@ -62,9 +70,36 @@ namespace BankSystem.Data.Storages
             return _clients.Keys.Average(c => (today.Year - c.Date.Year) - (today.DayOfYear < c.Date.DayOfYear ? 1 : 0));
         }
 
+        public Client FindClientByPassport(string passport)
+        {
+            return _clients.Keys.FirstOrDefault(c => c.Passport == passport);
+        }
+
+        public List<Account> GetClientAccounts(Client client)
+        {
+            if (_clients.ContainsKey(client))
+            {
+                return _clients[client];
+            }
+
+            return new List<Account>();
+        }
+
         public Dictionary<Client, List<Account>> GetAllClients()
         {
             return new Dictionary<Client, List<Account>>(_clients);
+        }
+
+        public List<Client> GetClientsByFilter(string name, string surname, string phoneNumber, string passport, DateOnly startDate, DateOnly endDate)
+        {
+            return _clients.Keys
+                .Where(c =>
+                    (string.IsNullOrEmpty(name) || c.Name == name) &&
+                    (string.IsNullOrEmpty(surname) || c.Surname == surname) &&
+                    (string.IsNullOrEmpty(phoneNumber) || c.PhoneNumber == phoneNumber) &&
+                    (string.IsNullOrEmpty(passport) || c.Passport == passport) &&
+                    c.Date >= startDate && c.Date <= endDate)
+                .ToList();
         }
     }
 }

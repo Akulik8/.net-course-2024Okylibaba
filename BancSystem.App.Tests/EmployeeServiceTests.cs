@@ -207,11 +207,11 @@ namespace BankSystem.App.Tests
             employeeService.AddEmployee(employee3);
 
             // Act
-            var resultByName = employeeService.GetEmployees("Иван", null, null, null, DateOnly.MinValue, DateOnly.MaxValue);
-            var resultBySurname = employeeService.GetEmployees(null, "Петров", null, null, DateOnly.MinValue, DateOnly.MaxValue);
-            var resultByPhone = employeeService.GetEmployees(null, null, "1111222233", null, DateOnly.MinValue, DateOnly.MaxValue);
-            var resultByPassport = employeeService.GetEmployees(null, null, null, "2345 678901", DateOnly.MinValue, DateOnly.MaxValue);
-            var resultByDateRange = employeeService.GetEmployees(null, null, null, null, new DateOnly(1980, 1, 1), new DateOnly(1995, 12, 31));
+            var resultByName = employeeService.GetEmployeesByFilter("Иван", null, null, null, DateOnly.MinValue, DateOnly.MaxValue);
+            var resultBySurname = employeeService.GetEmployeesByFilter(null, "Петров", null, null, DateOnly.MinValue, DateOnly.MaxValue);
+            var resultByPhone = employeeService.GetEmployeesByFilter(null, null, "1111222233", null, DateOnly.MinValue, DateOnly.MaxValue);
+            var resultByPassport = employeeService.GetEmployeesByFilter(null, null, null, "2345 678901", DateOnly.MinValue, DateOnly.MaxValue);
+            var resultByDateRange = employeeService.GetEmployeesByFilter(null, null, null, null, new DateOnly(1980, 1, 1), new DateOnly(1995, 12, 31));
 
 
             // Assert 

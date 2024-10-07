@@ -20,7 +20,7 @@ namespace BankSystem.App.Services
 
         public void AddEmployee(Employee employee)
         {
-            if (_employeeStorage.GetAllEmployees().Contains(employee))
+            if (_employeeStorage.FindEmployeeByPassport(employee.Passport) != null)
             {
                 throw new PersonAlreadyExistsException("Этот сотрудник уже есть.");
             }
@@ -40,35 +40,17 @@ namespace BankSystem.App.Services
             _employeeStorage.AddEmployee(employee);
         }
 
-        public void UpdateEmployee(string passportNumber, Employee newEmployee)
+        public void UpdateEmployee(string passport, Employee newEmployee)
         {
-            var employee = _employeeStorage.GetAllEmployees().FirstOrDefault(e => e.Passport == passportNumber);
-
+            var employee = _employeeStorage.FindEmployeeByPassport(passport);
             if (employee == null)
                 throw new NotFoundException("Сотрудник с таким паспортом не найден");
-
-            employee.Name = newEmployee.Name;
-            employee.Surname = newEmployee.Surname;
-            employee.PhoneNumber = newEmployee.PhoneNumber;
-            employee.Date = newEmployee.Date;
-            employee.Passport = newEmployee.Passport;
-            employee.PhoneNumber = newEmployee.PhoneNumber;
-            employee.Contract = newEmployee.Contract;
-            employee.DateStartWork = newEmployee.DateStartWork;
-            employee.Position = newEmployee.Position;
-            employee.Salary = newEmployee.Salary;
+            _employeeStorage.UpdateEmployee(employee, newEmployee);
         }
 
-        public List<Employee> GetEmployees(string name, string surname, string phoneNumber, string passport, DateOnly startDate, DateOnly endDate)
+        public List<Employee> GetEmployeesByFilter(string name, string surname, string phoneNumber, string passport, DateOnly startDate, DateOnly endDate)
         {
-            return _employeeStorage.GetAllEmployees()
-                .Where(c =>
-                    (string.IsNullOrEmpty(name) || c.Name == name) &&
-                    (string.IsNullOrEmpty(surname) || c.Surname == surname) &&
-                    (string.IsNullOrEmpty(phoneNumber) || c.PhoneNumber == phoneNumber) &&
-                    (string.IsNullOrEmpty(passport) || c.Passport == passport) &&
-                    c.Date >= startDate && c.Date <= endDate)
-                .ToList();
+            return _employeeStorage.GetEmployeesByFilter(name, surname, phoneNumber, passport, startDate, endDate);
         }
     }
 }

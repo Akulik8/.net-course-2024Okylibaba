@@ -20,7 +20,7 @@ namespace BankSystem.App.Services
 
         public void AddClient(Client client)
         {
-            if (_clientStorage.GetAllClients().ContainsKey(client))
+            if (_clientStorage.FindClientByPassport(client.Passport) != null)
             {
                 throw new PersonAlreadyExistsException("Этот клиент уже есть.");
             }
@@ -54,47 +54,32 @@ namespace BankSystem.App.Services
 
         public void AddAccountToClient(string passport, Account account)
         {
-            var client = _clientStorage.GetAllClients().FirstOrDefault(c => c.Key.Passport == passport);
+            var client = _clientStorage.FindClientByPassport(passport);
 
-            if (client.Key == null)
+            if (client == null)
                 throw new NotFoundException("Клиент с таким паспортом не найден");
 
-            if (client.Value.Any(a => a.Currency.Equals(account.Currency)))
+            var accounts = _clientStorage.GetClientAccounts(client);
+            if (accounts.Any(a => a.Currency.Equals(account.Currency)))
                 throw new Exception("У клиента уже есть счёт в этой валюте");
 
-            _clientStorage.AddAccount(client.Key, account);
+            _clientStorage.AddAccount(client, account);
         }
 
 
         public void EditAccount(string passport, Account oldAccount, Account newAccount)
         {
-            var client = _clientStorage.GetAllClients().FirstOrDefault(c => c.Key.Passport == passport);
+            var client = _clientStorage.FindClientByPassport(passport);
 
-            if (client.Key == null)
+            if (client == null)
                 throw new NotFoundException("Клиент с таким паспортом не найден");
 
-            var account = client.Value.FirstOrDefault(a => a.Currency.Equals(oldAccount.Currency));
-
-            if (account != null)
-            {
-                _clientStorage.UpdateAccount(client.Key, oldAccount, newAccount);
-            }
-            else
-            {
-                throw new Exception("Счет не найден.");
-            }
+            _clientStorage.UpdateAccount(client, oldAccount, newAccount);
         }
 
-        public List<Client> GetClients(string name, string surname, string phoneNumber, string passport, DateOnly startDate, DateOnly endDate)
+        public List<Client> GetClientsByFilter(string name, string surname, string phoneNumber, string passport, DateOnly startDate, DateOnly endDate)
         {
-            return _clientStorage.GetAllClients().Keys
-                .Where(c =>
-                    (string.IsNullOrEmpty(name) || c.Name == name) &&
-                    (string.IsNullOrEmpty(surname) || c.Surname == surname) &&
-                    (string.IsNullOrEmpty(phoneNumber) || c.PhoneNumber == phoneNumber) &&
-                    (string.IsNullOrEmpty(passport) || c.Passport == passport) &&
-                    c.Date >= startDate && c.Date <= endDate)
-                .ToList();
+            return _clientStorage.GetClientsByFilter(name, surname, phoneNumber, passport, startDate, endDate);
         }
     }
 }
