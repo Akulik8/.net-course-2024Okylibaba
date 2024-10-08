@@ -1,4 +1,5 @@
-﻿using BankSystem.App.Services;
+﻿using BankSystem.App.Interfaces;
+using BankSystem.App.Services;
 using BankSystem.App.Services.Exceptions;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
@@ -16,27 +17,28 @@ namespace BankSystem.App.Tests
         public void AddEmployeePositiveTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
+            IEmployeeStorage storage = new EmployeeStorage();
+            var employeeService = new EmployeeService(storage);
             var testDataGenerator = new TestDataGenerator();
             var employees = testDataGenerator.GenerateEmployees(10);
 
             // Act
             foreach (var employee in employees)
             {
-                storage.AddEmployee(employee);
+                storage.Add(employee);
             }
 
             Employee expectedEmployee = employees[0];
 
             // Assert
-            Assert.Contains(expectedEmployee, storage.GetAllEmployees());
+            Assert.Contains(expectedEmployee, storage.Get(null));
         }
 
         [Fact]
         public void AddEmployeeThrowsPersonAlreadyExistsException()
         {
             // Arrange
-            var storage = new EmployeeStorage();
+            IEmployeeStorage storage = new EmployeeStorage();
             var employeeService = new EmployeeService(storage);
             var testDataGenerator = new TestDataGenerator();
             var employees = testDataGenerator.GenerateEmployees(10);
@@ -57,7 +59,7 @@ namespace BankSystem.App.Tests
         public void AddEmployeeThrowsPersonTooYoungException()
         {
             // Arrange
-            var storage = new EmployeeStorage();
+            IEmployeeStorage storage = new EmployeeStorage();
             var employeeService = new EmployeeService(storage);
 
             // Act
@@ -76,8 +78,8 @@ namespace BankSystem.App.Tests
         public void AddEmployeeThrowsNoPassportException()
         {
             // Arrange
-            var storage = new EmployeeStorage();
-            var employeeService = new EmployeeService(storage); ;
+            IEmployeeStorage storage = new EmployeeStorage();
+            var employeeService = new EmployeeService(storage);
 
             // Act
             Employee employee = new Employee
@@ -95,7 +97,7 @@ namespace BankSystem.App.Tests
         public void UpdateEmployeePositivTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
+            IEmployeeStorage storage = new EmployeeStorage();
             var employeeService = new EmployeeService(storage);
 
             // Создаем и добавляем сотрудника
@@ -112,7 +114,7 @@ namespace BankSystem.App.Tests
                 Salary = 50000
             };
 
-            storage.AddEmployee(existingEmployee);
+            storage.Add(existingEmployee);
 
             var updatedEmployee = new Employee
             {
@@ -128,10 +130,10 @@ namespace BankSystem.App.Tests
             };
 
             // Act
-            employeeService.UpdateEmployee("1234567890", updatedEmployee);
+            employeeService.UpdateEmployee(existingEmployee, updatedEmployee);
 
             // Assert
-            var updatedEmp = storage.GetAllEmployees().FirstOrDefault(e => e.Passport == "1234567890");
+            var updatedEmp = storage.Get(null).FirstOrDefault(e => e.Passport == "1234567890");
             Assert.NotNull(updatedEmp);
             Assert.Equal("Сергей", updatedEmp.Name);
             Assert.Equal("Сергеев", updatedEmp.Surname);
@@ -147,7 +149,7 @@ namespace BankSystem.App.Tests
         public void UpdateEmployeeThrowNotFoundException()
         {
             // Arrange
-            var storage = new EmployeeStorage();
+            IEmployeeStorage storage = new EmployeeStorage();
             var employeeService = new EmployeeService(storage);
 
             // Act
@@ -165,14 +167,14 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            Assert.Throws<NotFoundException>(() => employeeService.UpdateEmployee("1234567890", newEmployee));
+            Assert.Throws<NotFoundException>(() => employeeService.UpdateEmployee(newEmployee, newEmployee));
         }
 
         [Fact]
         public void GetEmployeesPositiveTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
+            IEmployeeStorage storage = new EmployeeStorage();
             var employeeService = new EmployeeService(storage);
 
             var employee1 = new Employee

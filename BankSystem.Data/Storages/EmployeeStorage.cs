@@ -1,4 +1,5 @@
-﻿using BankSystem.Domain.Models;
+﻿using BankSystem.App.Interfaces;
+using BankSystem.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage
+    public class EmployeeStorage : IEmployeeStorage
     {
         private readonly List<Employee> _employees;
 
@@ -16,17 +17,17 @@ namespace BankSystem.Data.Storages
             _employees = new List<Employee>();
         }
 
-        public void AddEmployee(Employee employee)
+        public void Add(Employee employee)
         {
             _employees.Add(employee);
         }
 
-        public void RemoveEmployee(Employee employee)
+        public void Delete(Employee employee)
         {
             _employees.Remove(employee);
         }
 
-        public void UpdateEmployee(Employee employee, Employee newEmployee) 
+        public void Update(Employee employee, Employee newEmployee) 
         {
             employee.Name = newEmployee.Name;
             employee.Surname = newEmployee.Surname;
@@ -40,45 +41,12 @@ namespace BankSystem.Data.Storages
             employee.Salary = newEmployee.Salary;
         }
 
-        public Employee GetYoungestEmployee()
+        public List<Employee> Get(Func<Employee, bool>? filter)
         {
-            return _employees.OrderBy(e => e.Date).LastOrDefault();
-        }
+            if (filter == null)
+                return _employees;
 
-        public Employee GetOldestEmployee()
-        {
-            return _employees.OrderBy(e => e.Date).FirstOrDefault();
-        }
-
-        public double GetAverageAge()
-        {
-            if (_employees.Count == 0)
-                return 0;
-
-            DateTime today = DateTime.Today;
-            return _employees.Average(e => (today.Year - e.Date.Year) - (today.DayOfYear < e.Date.DayOfYear ? 1 : 0));
-        }
-
-        public Employee FindEmployeeByPassport(string passport)
-        {
-            return _employees.FirstOrDefault(c => c.Passport == passport);
-        }
-
-        public List<Employee> GetAllEmployees()
-        {
-            return new List<Employee>(_employees);
-        }
-
-        public List<Employee> GetEmployeesByFilter(string name, string surname, string phoneNumber, string passport, DateOnly startDate, DateOnly endDate)
-        {
-            return _employees
-                .Where(c =>
-                    (string.IsNullOrEmpty(name) || c.Name == name) &&
-                    (string.IsNullOrEmpty(surname) || c.Surname == surname) &&
-                    (string.IsNullOrEmpty(phoneNumber) || c.PhoneNumber == phoneNumber) &&
-                    (string.IsNullOrEmpty(passport) || c.Passport == passport) &&
-                    c.Date >= startDate && c.Date <= endDate)
-                .ToList();
+            return _employees.Where(filter).ToList();
         }
     }
 }
