@@ -14,5 +14,6 @@ namespace BankSystem.Domain.Models
         public string Passport { get; set; }
         public string Address { get; set; }
         public DateOnly Date {  get; set; }
+        public int Bonus { get; set; }
     }
 }
