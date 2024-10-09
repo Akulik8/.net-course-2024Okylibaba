@@ -12,9 +12,9 @@ namespace BankSystem.App.Services
 {
     public class EmployeeService
     {
-        private readonly IEmployeeStorage _employeeStorage;
+        private readonly IStorage<Employee, List<Employee>> _employeeStorage;
 
-        public EmployeeService(IEmployeeStorage employeeStorage)
+        public EmployeeService(IStorage<Employee, List<Employee>> employeeStorage)
         {
             _employeeStorage = employeeStorage;
         }
@@ -52,15 +52,9 @@ namespace BankSystem.App.Services
             _employeeStorage.Update(oldEmployee, newEmployee);
         }
 
-        public List<Employee> GetEmployeesByFilter(string? name, string? surname, string? phoneNumber, string? passport, DateOnly? startDate, DateOnly? endDate)
+        public List<Employee> GetEmployeesByFilter(Func<Employee, bool>? filter)
         {
-            return _employeeStorage.Get(c =>
-              (string.IsNullOrEmpty(name) || c.Name == name) &&
-              (string.IsNullOrEmpty(surname) || c.Surname == surname) &&
-              (string.IsNullOrEmpty(phoneNumber) || c.PhoneNumber == phoneNumber) &&
-              (string.IsNullOrEmpty(passport) || c.Passport == passport) &&
-              (!startDate.HasValue || c.Date >= startDate.Value) &&
-              (!endDate.HasValue || c.Date <= endDate.Value));
+            return _employeeStorage.Get(filter);
         }
     }
 }

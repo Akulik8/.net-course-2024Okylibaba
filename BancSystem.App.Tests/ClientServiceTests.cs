@@ -229,11 +229,11 @@ namespace BankSystem.App.Tests
             clientService.AddClient(client3);
 
             // Act
-            var resultByName = clientService.GetClientsByFilter("Иван", null, null, null, DateOnly.MinValue, DateOnly.MaxValue);
-            var resultBySurname = clientService.GetClientsByFilter(null, "Петров", null, null, DateOnly.MinValue, DateOnly.MaxValue);
-            var resultByPhone = clientService.GetClientsByFilter(null, null, "1111222233", null, DateOnly.MinValue, DateOnly.MaxValue);
-            var resultByPassport = clientService.GetClientsByFilter(null, null, null, "2345 678901", DateOnly.MinValue, DateOnly.MaxValue);
-            var resultByDateRange = clientService.GetClientsByFilter(null, null, null, null, new DateOnly(1980, 1, 1), new DateOnly(1995, 12, 31));
+            var resultByName = clientService.GetClientsByFilter(с => с.Name == "Иван");
+            var resultBySurname = clientService.GetClientsByFilter(с => с.Surname == "Петров");
+            var resultByPhone = clientService.GetClientsByFilter(с => с.PhoneNumber == "1111222233");
+            var resultByPassport = clientService.GetClientsByFilter(с => с.Passport == "2345 678901");
+            var resultByDateRange = clientService.GetClientsByFilter(с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
 
 
             // Assert 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage : IEmployeeStorage
+    public class EmployeeStorage : IStorage<Employee, List<Employee>>
     {
         private readonly List<Employee> _employees;
 
