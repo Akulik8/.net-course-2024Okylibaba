@@ -132,8 +132,8 @@ order by age asc;
 select extract(year from age(date)) as age, count(*) as count, array_agg(c.name || ' ' || c.surname) AS clients
 from client c
 group by age
-ORDER BY age ASC;
+order by age asc;
 
-SELECT*
-FROM client c
-LIMIT 10;
+select *
+from client c
+limit 10;
