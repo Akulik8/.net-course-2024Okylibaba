@@ -1,8 +1,10 @@
 ﻿using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,80 +12,129 @@ namespace BankSystem.Data.Storages
 {
     public class ClientStorage : IClientStorage
     {
-        private readonly Dictionary<Client, List<Account>> _clients;
+        private readonly BankSystemDbContext _bankSystemDbContext;
 
-        public ClientStorage()
+        public ClientStorage(BankSystemDbContext bankSystemDbContext)
         {
-            _clients = new Dictionary<Client, List<Account>>();
+            _bankSystemDbContext = bankSystemDbContext;
         }
 
         public void Add(Client client)
         {
-            List<Account> accounts = new List<Account>();
-            accounts.Add(new Account
+            if (client.Id == Guid.Empty)
             {
-                Currency = new Currency
+                client.Id = Guid.NewGuid();
+            }
+
+            _bankSystemDbContext.Clients.Add(client);
+            _bankSystemDbContext.SaveChanges();
+
+            var defaultAccount = new Account
+            {
+                ClientId = client.Id,
+                Id = Guid.NewGuid(),
+                Amount = 0,
+                CurrencyName = "Доллар США"
+            };
+
+            _bankSystemDbContext.Accounts.Add(defaultAccount);
+            _bankSystemDbContext.SaveChanges();
+        }
+
+        public void Delete(Guid id)
+        {
+            var client = _bankSystemDbContext.Clients
+                        .FirstOrDefault(c => c.Id == id);
+
+            if (client != null)
+            {
+                _bankSystemDbContext.Clients.Remove(client);
+                _bankSystemDbContext.SaveChanges();
+            }
+        }
+
+        public void Update(Guid id, Client newClient) 
+        {
+            var client = _bankSystemDbContext.Clients
+               .FirstOrDefault(c => c.Id == newClient.Id);
+            if (client != null)
+            {
+                client.Name = newClient.Name;
+                client.Surname = newClient.Surname;
+                client.PhoneNumber = newClient.PhoneNumber;
+                client.Passport = newClient.Passport;
+                client.Address = newClient.Address;
+                client.Date = newClient.Date;
+
+                _bankSystemDbContext.SaveChanges();
+            }
+        }
+
+        public Dictionary<Client, List<Account>> GetById(Guid id)
+        {
+            var clientWithAccounts = _bankSystemDbContext.Clients
+                .Include(c => c.Accounts)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (clientWithAccounts != null)
+            {
+                return new Dictionary<Client, List<Account>>
                 {
-                    Name = "Доллар США",
-                    Code = "USD",
-                    ExchangeRate = 1.0m
-                },
-                Amount = 0
-            });
-
-            _clients.Add(client, accounts);
-        }
-
-        public void Delete(Client client)
-        {
-            _clients.Remove(client);
-        }
-
-        public void Update(Client oldClient, Client newClient) 
-        {
-            oldClient.Name = newClient.Name;
-            oldClient.Surname = newClient.Surname;
-            oldClient.PhoneNumber = newClient.PhoneNumber;
-            oldClient.Passport = newClient.Passport;
-            oldClient.Address = newClient.Address;
-            oldClient.Date = newClient.Date;    
-            oldClient.AccountNumber = newClient.AccountNumber;
-            oldClient.Balance = newClient.Balance;
-        }
-
-        public Dictionary<Client, List<Account>> Get(Func<Client, bool>? filter)
-        {
-            if (filter == null)
-                return _clients;
-
-            return _clients
-                .Where(kvp => filter(kvp.Key))
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        }
-
-        public void AddAccount(Client client, Account account)
-        {
-            _clients[client].Add(account);
-        }
-
-        public void UpdateAccount(Client client, Account oldAccount, Account newAccount) 
-        {
-            Account updatedAccount = _clients[client].FirstOrDefault(a => a.Currency.Equals(oldAccount.Currency));
-
-            if (updatedAccount != null)
-            {
-                updatedAccount.Amount = newAccount.Amount;
-                updatedAccount.Currency = newAccount.Currency;
+                    { clientWithAccounts, clientWithAccounts.Accounts.ToList() }
+                };
             }
-            else
+
+            return new Dictionary<Client, List<Account>>();
+        }
+
+        public List<Client> Get(int pageSize, int pageNumber, Func<Client, bool>? filter)
+        {
+            var query = _bankSystemDbContext.Clients.AsQueryable();
+
+            if (filter != null)
             {
-                throw new Exception("Счет не найден.");
+                query = query.Where(filter).AsQueryable();
+            }
+
+            query = query
+                .OrderBy(x => x.Surname)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            return query.ToList();
+        }
+
+        public void AddAccount(Guid Id, Account account)
+        {
+            account.ClientId = Id;
+            _bankSystemDbContext.Accounts.Add(account);
+            _bankSystemDbContext.SaveChanges();
+        }
+
+        public void UpdateAccount(Account newAccount) 
+        {
+            var account = _bankSystemDbContext.Accounts
+                      .FirstOrDefault(a => a.Id == newAccount.Id);
+
+            if (account != null)
+            {
+                account.CurrencyName = newAccount.CurrencyName;
+                account.Amount = newAccount.Amount;
+
+                _bankSystemDbContext.SaveChanges();
             }
         }
 
-        public void DeleteAccount(Client client, Account account) 
+        public void DeleteAccount(Guid id) 
         {
-            _clients[client].Remove(account);
+            var account = _bankSystemDbContext.Accounts
+                  .FirstOrDefault(a => a.Id == id);
+
+            if (account != null)
+            {
+                _bankSystemDbContext.Accounts.Remove(account);
+                _bankSystemDbContext.SaveChanges();
+            }
         }
     }
 }

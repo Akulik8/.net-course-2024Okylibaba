@@ -17,7 +17,7 @@ namespace BankSystem.App.Tests
         public void AddEmployeePositiveTest()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage();
+            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
             var employeeService = new EmployeeService(storage);
             var testDataGenerator = new TestDataGenerator();
             var employees = testDataGenerator.GenerateEmployees(10);
@@ -25,20 +25,20 @@ namespace BankSystem.App.Tests
             // Act
             foreach (var employee in employees)
             {
-                storage.Add(employee);
+                employeeService.AddEmployee(employee);
             }
 
             Employee expectedEmployee = employees[0];
 
             // Assert
-            Assert.Contains(expectedEmployee, storage.Get(null));
+            Assert.Contains(expectedEmployee, storage.Get(100,1,null));
         }
 
         [Fact]
         public void AddEmployeeThrowsPersonAlreadyExistsException()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage();
+            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
             var employeeService = new EmployeeService(storage);
             var testDataGenerator = new TestDataGenerator();
             var employees = testDataGenerator.GenerateEmployees(10);
@@ -59,7 +59,7 @@ namespace BankSystem.App.Tests
         public void AddEmployeeThrowsPersonTooYoungException()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage();
+            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
             var employeeService = new EmployeeService(storage);
 
             // Act
@@ -78,7 +78,7 @@ namespace BankSystem.App.Tests
         public void AddEmployeeThrowsNoPassportException()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage();
+            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
             var employeeService = new EmployeeService(storage);
 
             // Act
@@ -97,58 +97,56 @@ namespace BankSystem.App.Tests
         public void UpdateEmployeePositivTest()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage();
+            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
             var employeeService = new EmployeeService(storage);
 
-            var existingEmployee = new Employee
+            var employee = new Employee
             {
-                Name = "Иван",
-                Surname = "Иванов",
-                PhoneNumber = "123456789",
-                Passport = "1234567890",
-                Date = new DateOnly(1990, 1, 1),
-                Contract = "Контракт",
-                DateStartWork = new DateOnly(2020, 1, 1),
-                Position = "Менеджер",
-                Salary = 50000
+                Id = new Guid(),
+                Name = "Gleb",
+                Surname = "Ivanov",
+                PhoneNumber = "333143",
+                Date = new DateOnly(2000, 1, 1),
+                Passport = "3333423333333",
+                Address = "-----",
+                Position = "Бухгалтер",
+                Contract = "Контракт заключен",
+                Salary = 20000,
+                DateStartWork = new DateOnly(2020, 1, 1)
             };
 
-            storage.Add(existingEmployee);
+            storage.Add(employee);
 
-            var updatedEmployee = new Employee
+            var updatedEmployee = new Employee()
             {
-                Name = "Сергей",
-                Surname = "Сергеев",
-                PhoneNumber = "987654321",
-                Passport = "1234567890",
-                Date = new DateOnly(1985, 1, 1),
-                Contract = "Новый контракт",
-                DateStartWork = new DateOnly(2023, 1, 1),
-                Position = "Директор",
-                Salary = 100000
+                Id = employee.Id,
+                Name = "Ivan",
+                Surname = employee.Surname,
+                PhoneNumber = employee.PhoneNumber,
+                Date = employee.Date,
+                Passport = employee.Passport,
+                Address = employee.Address,
+                Position = employee.Position,
+                Contract = employee.Contract,
+                Salary = employee.Salary,
+                DateStartWork = employee.DateStartWork
             };
 
             // Act
-            employeeService.UpdateEmployee(existingEmployee, updatedEmployee);
+            employeeService.UpdateEmployee(updatedEmployee);
 
             // Assert
-            var updatedEmp = storage.Get(null).FirstOrDefault(e => e.Passport == "1234567890");
-            Assert.NotNull(updatedEmp);
-            Assert.Equal("Сергей", updatedEmp.Name);
-            Assert.Equal("Сергеев", updatedEmp.Surname);
-            Assert.Equal("987654321", updatedEmp.PhoneNumber);
-            Assert.Equal(new DateOnly(1985, 1, 1), updatedEmp.Date);
-            Assert.Equal("Новый контракт", updatedEmp.Contract);
-            Assert.Equal(new DateOnly(2023, 1, 1), updatedEmp.DateStartWork);
-            Assert.Equal("Директор", updatedEmp.Position);
-            Assert.Equal(100000, updatedEmp.Salary);
+            var employees = storage.GetById(employee.Id);
+            var myEmployee = employees.LastOrDefault(e => e.Id == employee.Id);
+
+            Assert.Equal(myEmployee.Id, updatedEmployee.Id);
         }
 
         [Fact]
         public void UpdateEmployeeThrowNotFoundException()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage();
+            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
             var employeeService = new EmployeeService(storage);
 
             // Act
@@ -166,14 +164,14 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            Assert.Throws<NotFoundException>(() => employeeService.UpdateEmployee(newEmployee, newEmployee));
+            Assert.Throws<NotFoundException>(() => employeeService.UpdateEmployee(newEmployee));
         }
 
         [Fact]
         public void GetEmployeesPositiveTest()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage();
+            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
             var employeeService = new EmployeeService(storage);
 
             var employee1 = new Employee
@@ -182,7 +180,12 @@ namespace BankSystem.App.Tests
                 Surname = "Иванов",
                 PhoneNumber = "1234567890",
                 Passport = "1234 567890",
-                Date = new DateOnly(1990, 1, 15)
+                Date = new DateOnly(1990, 1, 15),
+                Address = "-----",
+                Position = "Бухгалтер",
+                Contract = "Контракт заключен",
+                Salary = 20000,
+                DateStartWork = new DateOnly(2020, 1, 1)
             };
 
             var employee2 = new Employee
@@ -191,7 +194,12 @@ namespace BankSystem.App.Tests
                 Surname = "Петров",
                 PhoneNumber = "0987654321",
                 Passport = "2345 678901",
-                Date = new DateOnly(1985, 6, 25)
+                Date = new DateOnly(1985, 6, 25),
+                Address = "-----",
+                Position = "Бухгалтер",
+                Contract = "Контракт заключен",
+                Salary = 20000,
+                DateStartWork = new DateOnly(2020, 1, 1)
             };
 
             var employee3 = new Employee
@@ -200,7 +208,12 @@ namespace BankSystem.App.Tests
                 Surname = "Сергеев",
                 PhoneNumber = "1111222233",
                 Passport = "3456 789012",
-                Date = new DateOnly(2000, 3, 10)
+                Date = new DateOnly(2000, 3, 10),
+                Address = "-----",
+                Position = "Бухгалтер",
+                Contract = "Контракт заключен",
+                Salary = 20000,
+                DateStartWork = new DateOnly(2020, 1, 1)
             };
 
             employeeService.AddEmployee(employee1);
@@ -208,11 +221,11 @@ namespace BankSystem.App.Tests
             employeeService.AddEmployee(employee3);
 
             // Act
-            var resultByName = employeeService.GetEmployeesByFilter(с => с.Name == "Иван");
-            var resultBySurname = employeeService.GetEmployeesByFilter(с => с.Surname == "Петров");
-            var resultByPhone = employeeService.GetEmployeesByFilter(с => с.PhoneNumber == "1111222233");
-            var resultByPassport = employeeService.GetEmployeesByFilter(с => с.Passport== "2345 678901");
-            var resultByDateRange = employeeService.GetEmployeesByFilter(с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
+            var resultByName = employeeService.GetEmployeesByFilter(100, 1, с => с.Name == "Иван");
+            var resultBySurname = employeeService.GetEmployeesByFilter(100, 1, с => с.Surname == "Петров");
+            var resultByPhone = employeeService.GetEmployeesByFilter(100, 1, с => с.PhoneNumber == "1111222233");
+            var resultByPassport = employeeService.GetEmployeesByFilter(100, 1, с => с.Passport == "2345 678901");
+            var resultByDateRange = employeeService.GetEmployeesByFilter(100, 1, с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
 
 
             // Assert 

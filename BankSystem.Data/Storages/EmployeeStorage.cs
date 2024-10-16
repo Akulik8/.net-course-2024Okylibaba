@@ -3,6 +3,7 @@ using BankSystem.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,43 +11,76 @@ namespace BankSystem.Data.Storages
 {
     public class EmployeeStorage : IStorage<Employee, List<Employee>>
     {
-        private readonly List<Employee> _employees;
+        private readonly BankSystemDbContext _bankSystemDbContext;
 
-        public EmployeeStorage()
+        public EmployeeStorage(BankSystemDbContext bankSystemDbContext)
         {
-            _employees = new List<Employee>();
+            _bankSystemDbContext = bankSystemDbContext;
         }
 
         public void Add(Employee employee)
         {
-            _employees.Add(employee);
+            _bankSystemDbContext.Employees.Add(employee);
+            _bankSystemDbContext.SaveChanges();
         }
 
-        public void Delete(Employee employee)
+        public void Delete(Guid id)
         {
-            _employees.Remove(employee);
+            var employee = _bankSystemDbContext.Employees.FirstOrDefault(e => e.Id == id);
+
+            if (employee != null)
+            {
+                _bankSystemDbContext.Employees.Remove(employee);
+                _bankSystemDbContext.SaveChanges();
+            }
         }
 
-        public void Update(Employee employee, Employee newEmployee) 
+        public void Update(Guid id, Employee newEmployee) 
         {
-            employee.Name = newEmployee.Name;
-            employee.Surname = newEmployee.Surname;
-            employee.PhoneNumber = newEmployee.PhoneNumber;
-            employee.Date = newEmployee.Date;
-            employee.Passport = newEmployee.Passport;
-            employee.PhoneNumber = newEmployee.PhoneNumber;
-            employee.Contract = newEmployee.Contract;
-            employee.DateStartWork = newEmployee.DateStartWork;
-            employee.Position = newEmployee.Position;
-            employee.Salary = newEmployee.Salary;
+            var employee = _bankSystemDbContext.Employees
+                .FirstOrDefault(e => e.Id == newEmployee.Id);
+
+            if (employee != null)
+            {
+                employee.Name = newEmployee.Name;
+                employee.Surname = newEmployee.Surname;
+                employee.PhoneNumber = newEmployee.PhoneNumber;
+                employee.Date = newEmployee.Date;
+                employee.Passport = newEmployee.Passport;
+                employee.PhoneNumber = newEmployee.PhoneNumber;
+                employee.Contract = newEmployee.Contract;
+                employee.DateStartWork = newEmployee.DateStartWork;
+                employee.Position = newEmployee.Position;
+                employee.Salary = newEmployee.Salary;
+
+                _bankSystemDbContext.SaveChanges();
+            }
         }
 
-        public List<Employee> Get(Func<Employee, bool>? filter)
+        public List<Employee> GetById(Guid id)
         {
-            if (filter == null)
-                return _employees;
+            var employee = _bankSystemDbContext.Employees
+                .Where(e => e.Id == id)
+                .ToList();
 
-            return _employees.Where(filter).ToList();
+            return employee;
+        }
+
+        public List<Employee> Get(int pageSize, int pageNumber, Func<Employee, bool>? filter)
+        {
+            var query = _bankSystemDbContext.Employees.AsQueryable();
+
+            if (filter != null)
+            {
+                query = query.Where(filter).AsQueryable();
+            }
+
+            query = query
+                .OrderBy(x => x.Surname)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            return query.ToList();
         }
     }
 }

@@ -19,11 +19,9 @@ namespace BankSystem.App.Services
                 .RuleFor(c => c.Name, f => f.Name.FirstName())
                 .RuleFor(c => c.Surname, f => f.Name.LastName())
                 .RuleFor(c => c.PhoneNumber, f => f.Phone.PhoneNumber())
-                .RuleFor(c => c.Passport, f => $"IПР {f.UniqueIndex.ToString("000000000")}")
+                .RuleFor(c => c.Passport, f => $"IПР {f.Random.Number(100000000, 999999999)}")
                 .RuleFor(c => c.Address, f => $"г. Тирасполь, {f.Address.StreetName()}")
-                .RuleFor(c => c.Date, f => DateOnly.FromDateTime(f.Date.Past(90, DateTime.Now.AddYears(-18)).Date))
-                .RuleFor(c => c.AccountNumber, f => f.UniqueIndex + 100000)
-                .RuleFor(c => c.Balance, f => f.Finance.Amount(0, 10000000));
+                .RuleFor(c => c.Date, f => DateOnly.FromDateTime(f.Date.Past(90, DateTime.Now.AddYears(-18)).Date));
 
             return clientFaker.Generate(count);
         }
@@ -40,7 +38,7 @@ namespace BankSystem.App.Services
                 .RuleFor(e => e.Name, f => f.Name.FirstName())
                 .RuleFor(e => e.Surname, f => f.Name.LastName())
                 .RuleFor(e => e.PhoneNumber, f => f.Phone.PhoneNumber())
-                .RuleFor(e => e.Passport, f => $"IПР {f.UniqueIndex.ToString("000000000")}")
+                .RuleFor(c => c.Passport, f => $"IПР {f.Random.Number(100000000, 999999999)}")
                 .RuleFor(e => e.Address, f => $"г. Тирасполь, {f.Address.StreetName()}")
                 .RuleFor(e => e.Date, f => DateOnly.FromDateTime(f.Date.Past(90, DateTime.Now.AddYears(-18)).Date))
                 .RuleFor(e => e.Position, f => f.Name.JobTitle())
@@ -78,7 +76,7 @@ namespace BankSystem.App.Services
 
                     accounts.Add(new Account
                     {
-                        Currency = currency,
+                        CurrencyName = currency.Name,
                         Amount = faker.Finance.Amount()
                     });
                 }
@@ -111,7 +109,7 @@ namespace BankSystem.App.Services
 
                     accounts.Add(new Account
                     {
-                        Currency = currency,
+                        CurrencyName = currency.Name,
                         Amount = faker.Finance.Amount()
                     });
                 }
