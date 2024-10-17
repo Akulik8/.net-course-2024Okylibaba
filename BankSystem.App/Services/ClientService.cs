@@ -4,6 +4,8 @@ using BankSystem.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,9 +21,14 @@ namespace BankSystem.App.Services
             _clientStorage = clientStorage;
         }
 
+        public Dictionary<Client, List<Account>> Get(Client client)
+        {
+            return _clientStorage.GetById(client.Id);
+        }
+
         public void AddClient(Client client)
         {
-            if (_clientStorage.Get(c => c.Passport == client.Passport).Any())
+            if (_clientStorage.GetById(client.Id).Any())
                 throw new PersonAlreadyExistsException("Этот клиент уже есть.");
 
             DateTime today = DateTime.Today;
@@ -37,62 +44,47 @@ namespace BankSystem.App.Services
 
         public void RemoveClient(Client client)
         {
-            if (!_clientStorage.Get(c => c.Passport == client.Passport).Any())
+            if (!_clientStorage.GetById(client.Id).Any())
                 throw new NotFoundException("Клиент не найден.");
 
-            _clientStorage.Delete(client);
+            _clientStorage.Delete(client.Id);
         }
 
-        public void UpdateClient(Client oldClient, Client newClient)
+        public void UpdateClient(Client newClient)
         {
-            if (!_clientStorage.Get(c => c.Passport == oldClient.Passport).Any())
+            if (!_clientStorage.GetById(newClient.Id).Any())
                 throw new NotFoundException("Клиент не найден.");
             if (newClient == null)
                 throw new Exception("Нет сведений о новом клиенте.");
 
-            _clientStorage.Update(oldClient, newClient);
+            _clientStorage.Update(newClient.Id, newClient);
         }
 
         public void AddAccountToClient(Client client, Account account)
         {
-            var findClient= _clientStorage.Get(c => c.Passport == client.Passport);
-            if (!findClient.Any())
+            if (!_clientStorage.GetById(client.Id).Any())
                 throw new NotFoundException("Клиент не найден.");
             if (account == null)
                 throw new Exception("Лицевой счет не может быть нулевым.");
-            if (findClient.Values.Any(a => a.Equals(account)))
-                    throw new Exception("У клиента уже есть счёт в этой валюте.");
-
-            _clientStorage.AddAccount(client, account);
+            _clientStorage.AddAccount(client.Id, account);
         }
 
-        public void EditAccount(Client client, Account oldAccount, Account newAccount)
+        public void EditAccount(Account newAccount)
         {
-            var findClient = _clientStorage.Get(c => c.Passport == client.Passport);
-            if (!findClient.Any())
-                throw new NotFoundException("Клиент не найден.");
-            if (!findClient.Values.Any(a => a.Contains(oldAccount)))
-                throw new Exception("У клиента нет счёта в выбранной валюте.");
             if (newAccount == null)
                 throw new Exception("Нет сведений о новом лицевом счете.");
 
-            _clientStorage.UpdateAccount(client, oldAccount, newAccount);
+            _clientStorage.UpdateAccount(newAccount);
         }
 
-        public void DeleteAccount(Client client, Account account)
+        public void DeleteAccount(Account account)
         {
-            var findClient = _clientStorage.Get(c => c.Passport == client.Passport);
-            if (!findClient.Any())
-                throw new NotFoundException("Клиент не найден.");
-            if (!findClient.Values.Any(a => a.Equals(account)))
-                throw new Exception("У клиента нет счёта в выбранной валюте.");
-
-            _clientStorage.DeleteAccount(client, account);
+            _clientStorage.DeleteAccount(account.Id);
         }
 
-        public Dictionary<Client, List<Account>> GetClientsByFilter(Func<Client, bool>? filter)
+        public List<Client> Get(int pageSize, int pageNumber, Func<Client, bool>? filters)
         {
-            return _clientStorage.Get(filter);
+            return _clientStorage.Get(pageSize, pageNumber, filters);
         }
     }
 }

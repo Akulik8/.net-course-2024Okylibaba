@@ -4,6 +4,7 @@ using BankSystem.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,9 +20,14 @@ namespace BankSystem.App.Services
             _employeeStorage = employeeStorage;
         }
 
+        public List<Employee> Get(Employee employee)
+        {
+            return _employeeStorage.GetById(employee.Id);
+        }
+
         public void AddEmployee(Employee employee)
         {
-            if (_employeeStorage.Get(e => e.Passport == employee.Passport).Any())
+            if (_employeeStorage.GetById(employee.Id).Any())
                 throw new PersonAlreadyExistsException("Этот сотрудник уже есть.");
 
             DateTime today = DateTime.Today;
@@ -36,25 +42,25 @@ namespace BankSystem.App.Services
 
         public void RemoveClient(Employee employee)
         {
-            if (!_employeeStorage.Get(e => e.Passport == employee.Passport).Any())
-                throw new NotFoundException("Клиент не найден.");
+            if (!_employeeStorage.GetById(employee.Id).Any())
+                throw new NotFoundException("Сотрудник не найден.");
 
-            _employeeStorage.Delete(employee);
+            _employeeStorage.Delete(employee.Id);
         }
 
-        public void UpdateEmployee(Employee oldEmployee, Employee newEmployee)
+        public void UpdateEmployee(Employee newEmployee)
         {
-            if (!_employeeStorage.Get(c => c.Passport == oldEmployee.Passport).Any())
+            if (!_employeeStorage.GetById(newEmployee.Id).Any())
                 throw new NotFoundException("Сотрудник не найден.");
             if (newEmployee == null)
                 throw new Exception("Нет сведений о новом сотруднике.");
 
-            _employeeStorage.Update(oldEmployee, newEmployee);
+            _employeeStorage.Update(newEmployee.Id, newEmployee);
         }
 
-        public List<Employee> GetEmployeesByFilter(Func<Employee, bool>? filter)
+        public List<Employee> GetEmployeesByFilter(int pageSize, int pageNumber, Func<Employee, bool>? filter)
         {
-            return _employeeStorage.Get(filter);
+            return _employeeStorage.Get(pageSize, pageNumber, filter);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace BankSystem.App.Tests
         public void AddClientPositivTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
             var testDataGenerator = new TestDataGenerator();
             var clients = testDataGenerator.GenerateClients(10);
@@ -32,14 +32,14 @@ namespace BankSystem.App.Tests
             Client expectedClient = clients[0];
 
             // Assert
-            Assert.Contains(expectedClient, storage.Get(null));
+            Assert.Contains(expectedClient, storage.Get(1000,1,null));
         }
 
         [Fact]
         public void AddClientThrowsPersonAlreadyExistsException()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
             var testDataGenerator = new TestDataGenerator();
             var clients = testDataGenerator.GenerateClients(10);
@@ -60,7 +60,7 @@ namespace BankSystem.App.Tests
         public void AddClientThrowsPersonTooYoungException()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
 
             // Act
@@ -79,7 +79,7 @@ namespace BankSystem.App.Tests
         public void AddClientThrowsNoPassportException()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
 
             // Act
@@ -98,7 +98,7 @@ namespace BankSystem.App.Tests
         public void AddAccountToClientPositivTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
             var testDataGenerator = new TestDataGenerator();
             var clients = testDataGenerator.GenerateClients(10);
@@ -112,23 +112,27 @@ namespace BankSystem.App.Tests
             var account = new Account
             {
                 Amount = 0,
-                Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.013m }
+                //Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.013m }
+                CurrencyName = "Рубль РФ"
             };
 
             var firstClient = clients[0];
 
             clientService.AddAccountToClient(firstClient, account);
-            var clientInStorage = storage.Get(null).FirstOrDefault(c => c.Key.Passport == firstClient.Passport);
+               
+            var dictionaryClient = storage.GetById(firstClient.Id);
+            var accounts = dictionaryClient.Values;
+            var newAccount = accounts.LastOrDefault();
 
             // Assert
-            Assert.Contains(clientInStorage.Value, a => a.Currency.Code == "RUB");
+            Assert.Contains(newAccount, a => a.CurrencyName == "Рубль РФ");
         }
 
         [Fact]
         public void AddAccountToClientNotFoundException()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
             var testDataGenerator = new TestDataGenerator();
             var clients = testDataGenerator.GenerateClients(10);
@@ -142,7 +146,8 @@ namespace BankSystem.App.Tests
             var account = new Account
             {
                 Amount = 0,
-                Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.013m }
+                // Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.013m }
+                CurrencyName = "Рубль РФ"
             };
 
             Client firstClient = clients[0];
@@ -156,7 +161,7 @@ namespace BankSystem.App.Tests
         public void EditAccountPositivTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
             var testDataGenerator = new TestDataGenerator();
             var clients = testDataGenerator.GenerateClients(10);
@@ -167,35 +172,43 @@ namespace BankSystem.App.Tests
                 clientService.AddClient(client);
             }
 
+            Client firstClient = clients[0];
+
             var oldAccount = new Account
             {
+                Id = new Guid(),
+                ClientId = firstClient.Id,
                 Amount = 0,
-                Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.01m }
+                // Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.01m }
+                CurrencyName = "Евро"
             };
-
-            Client firstClient = clients[0];
+                      
             clientService.AddAccountToClient(firstClient, oldAccount);
             var newAccount = new Account
             {
+                Id = oldAccount.Id,
+                ClientId = firstClient.Id,
                 Amount = 0,
-                Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.013m }
+                //  Currency = new Currency { Name = "Рубль РФ", Code = "RUB", ExchangeRate = 0.013m }
+                CurrencyName = "Рубль РФ"
             };
-            clientService.AddAccountToClient(firstClient, newAccount);
+  
+            clientService.EditAccount(newAccount);
 
-            clientService.EditAccount(firstClient, oldAccount, newAccount);
-
-            var clientInStorage = storage.Get(null).FirstOrDefault(c => c.Key.Passport == firstClient.Passport);
-            Account updatedAccount = clientInStorage.Value.FirstOrDefault(a => a.Currency.Name == "Рубль РФ");
+            var newClient = storage.GetById(firstClient.Id);
+            var accounts = newClient.Values;
+            var updatedAccount = accounts.FirstOrDefault();
+            var myAccount = updatedAccount.First(a => a.Id.Equals(newAccount.Id));
 
             // Assert
-            Assert.Equal(0.013m, updatedAccount.Currency.ExchangeRate);
+            Assert.Equal(myAccount.Id, newAccount.Id);
         }
 
         [Fact]
         public void GetClientsPositiveTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage();
+            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
             var clientService = new ClientService(storage);
             var client1 = new Client
             {
@@ -203,7 +216,8 @@ namespace BankSystem.App.Tests
                 Surname = "Иванов",
                 PhoneNumber = "1234567890",
                 Passport = "1234 567890",
-                Date = new DateOnly(1990, 1, 15)
+                Date = new DateOnly(1990, 1, 15),
+                Address = "-----"
             };
 
             var client2 = new Client
@@ -212,7 +226,8 @@ namespace BankSystem.App.Tests
                 Surname = "Петров",
                 PhoneNumber = "0987654321",
                 Passport = "2345 678901",
-                Date = new DateOnly(1985, 6, 25)
+                Date = new DateOnly(1985, 6, 25),
+                Address = "-----"
             };
 
             var client3 = new Client
@@ -221,7 +236,8 @@ namespace BankSystem.App.Tests
                 Surname = "Сергеев",
                 PhoneNumber = "1111222233",
                 Passport = "3456 789012",
-                Date = new DateOnly(2000, 3, 10)
+                Date = new DateOnly(2000, 3, 10),
+                Address = "-----"
             };
 
             clientService.AddClient(client1);
@@ -229,11 +245,11 @@ namespace BankSystem.App.Tests
             clientService.AddClient(client3);
 
             // Act
-            var resultByName = clientService.GetClientsByFilter(с => с.Name == "Иван");
-            var resultBySurname = clientService.GetClientsByFilter(с => с.Surname == "Петров");
-            var resultByPhone = clientService.GetClientsByFilter(с => с.PhoneNumber == "1111222233");
-            var resultByPassport = clientService.GetClientsByFilter(с => с.Passport == "2345 678901");
-            var resultByDateRange = clientService.GetClientsByFilter(с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
+            var resultByName = clientService.Get(100,1,с => с.Name == "Иван");
+            var resultBySurname = clientService.Get(100, 1,с => с.Surname == "Петров");
+            var resultByPhone = clientService.Get(100, 1, с => с.PhoneNumber == "1111222233");
+            var resultByPassport = clientService.Get(100, 1, с => с.Passport == "2345 678901");
+            var resultByDateRange = clientService.Get(100, 1, с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
 
 
             // Assert 

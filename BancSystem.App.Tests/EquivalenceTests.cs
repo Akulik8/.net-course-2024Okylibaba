@@ -22,9 +22,7 @@ namespace BankSystem.App.Tests
                 PhoneNumber = soughtClient.Key.PhoneNumber,
                 Passport = soughtClient.Key.Passport,
                 Address = soughtClient.Key.Address,
-                Date = soughtClient.Key.Date,
-                AccountNumber = soughtClient.Key.AccountNumber,
-                Balance = soughtClient.Key.Balance
+                Date = soughtClient.Key.Date
             };
 
             // Act

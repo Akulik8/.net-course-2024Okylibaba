@@ -13,8 +13,7 @@ namespace BankSystem.Domain.Models
 {
     public class Client : Person
     {
-        public int AccountNumber { get; set; }
-        public decimal Balance { get; set; }
+        public ICollection<Account> Accounts { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -30,15 +29,13 @@ namespace BankSystem.Domain.Models
                 client.PhoneNumber == PhoneNumber &&
                 client.Passport == Passport &&
                 client.Address == Address &&
-                client.Date == Date &&
-                client.AccountNumber == AccountNumber &&
-                client.Balance == Balance;
+                client.Date == Date;
 
         }
         public override int GetHashCode()
         {
             return (Name?.GetHashCode() ?? 0) + (Surname?.GetHashCode() ?? 0) + (PhoneNumber?.GetHashCode() ?? 0) +
-         (Passport?.GetHashCode() ?? 0) + (Address?.GetHashCode() ?? 0) + Date.GetHashCode() + AccountNumber.GetHashCode() + Balance.GetHashCode();
+         (Passport?.GetHashCode() ?? 0) + (Address?.GetHashCode() ?? 0) + Date.GetHashCode();
         }
     }
 }
