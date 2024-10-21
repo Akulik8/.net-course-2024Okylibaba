@@ -34,6 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExportData", "ExportData", 
 	ProjectSection(SolutionItems) = preProject
 		ReadClients.csv = ReadClients.csv
 		WriteClients.csv = WriteClients.csv
+		ReadPersons.json = ReadPersons.json
+		WritePersons.json = WritePersons.json
 	EndProjectSection
 EndProject
 Global

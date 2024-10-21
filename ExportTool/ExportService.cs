@@ -3,28 +3,29 @@ using System.Globalization;
 using BankSystem.Domain.Models;
 using CsvHelper.Configuration;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace ExportTool
 {
     public class ExportService
     {
-        private string _pathToDirectory { get; set; }
-        private string _csvFileName { get; set; }
+        //private string _pathToDirectory { get; set; }
+        //private string _csvFileName { get; set; }
 
-        public ExportService(string pathToDirectory, string textFileName)
-        {
-            _pathToDirectory = pathToDirectory;
-            _csvFileName = textFileName;
-        }
+        //public ExportService(string pathToDirectory, string textFileName)
+        //{
+        //    _pathToDirectory = pathToDirectory;
+        //    _csvFileName = textFileName;
+        //}
 
-        public void WriteClientsToCsv(List<Client> clients)
+        public void WriteClientsToCsv(List<Client> clients, string pathToDirectory, string csvFileName)
         {
-            DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
             if (!dirInfo.Exists)
             {
                 dirInfo.Create();
             }
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(pathToDirectory, csvFileName);
             using (FileStream fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
             {
                 using (StreamWriter streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
@@ -44,11 +45,11 @@ namespace ExportTool
             }
         }
 
-        public List<Client> ReadClientsFromCsv()
+        public List<Client> ReadClientsFromCsv(string pathToDirectory, string csvFileName)
         {
             var clientList = new List<Client>();
 
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(pathToDirectory, csvFileName);
 
             using (var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
             {
@@ -67,6 +68,27 @@ namespace ExportTool
                 }
             }
             return clientList;
+        }
+
+        public void WritePersonsToCsv<T>(T person, string pathToDirectory, string csvFileName)
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
+            if (!dirInfo.Exists)
+            {
+                dirInfo.Create();
+            }
+            string fullPath = Path.Combine(pathToDirectory, csvFileName);
+            string serializePerson = JsonConvert.SerializeObject(person, Formatting.Indented);
+            File.WriteAllText(fullPath, serializePerson);
+        }
+
+        public T ReadPersonsToCsv<T>(string pathToDirectory, string csvFileName)
+        {
+            string fullPath = Path.Combine(pathToDirectory, csvFileName);
+            string deserializePerson = File.ReadAllText(fullPath);
+            T persons = JsonConvert.DeserializeObject<T>(deserializePerson);
+            
+            return persons;
         }
     }
 }

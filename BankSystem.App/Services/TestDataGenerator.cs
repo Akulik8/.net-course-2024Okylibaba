@@ -16,6 +16,7 @@ namespace BankSystem.App.Services
         public List<Client> GenerateClients(int count)
         {
             var clientFaker = new Faker<Client>("ru")
+                .RuleFor(c => c.Id, f => Guid.NewGuid())
                 .RuleFor(c => c.Name, f => f.Name.FirstName())
                 .RuleFor(c => c.Surname, f => f.Name.LastName())
                 .RuleFor(c => c.PhoneNumber, f => f.Phone.PhoneNumber())
@@ -35,6 +36,7 @@ namespace BankSystem.App.Services
         public List<Employee> GenerateEmployees(int count)
         {
             var employeeFaker = new Faker<Employee>("ru")
+                .RuleFor(e => e.Id, f => Guid.NewGuid())
                 .RuleFor(e => e.Name, f => f.Name.FirstName())
                 .RuleFor(e => e.Surname, f => f.Name.LastName())
                 .RuleFor(e => e.PhoneNumber, f => f.Phone.PhoneNumber())
