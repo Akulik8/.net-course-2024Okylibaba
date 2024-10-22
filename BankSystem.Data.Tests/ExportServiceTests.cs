@@ -52,7 +52,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void WritePersonsToCsvWithClientsPositiveTest()
+        public void WritePersonsToFileJsonWithClientsPositiveTest()
         {
             //Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -60,15 +60,15 @@ namespace BankSystem.Data.Tests
             var exportService = new ExportService();
 
             //Act
-            exportService.WritePersonsToCsv(clients, @"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
-            var readClients = exportService.ReadPersonsToCsv<List<Client>>(@"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+            exportService.WritePersonsToFileJson(clients, @"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+            var readClients = exportService.ReadPersonsFromFileJson<List<Client>>(@"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
 
             //Asssert
             Assert.Equal(clients.Count, readClients.Count);
         }
 
         [Fact]
-        public void WritePersonsToCsvWithEmployeesPositiveTest()
+        public void WritePersonsToFileJsonWithEmployeesPositiveTest()
         {
             //Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
@@ -76,15 +76,15 @@ namespace BankSystem.Data.Tests
             var exportService = new ExportService();
 
             //Act
-            exportService.WritePersonsToCsv(employees, @"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
-            var readEmployees = exportService.ReadPersonsToCsv<List<Employee>>(@"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+            exportService.WritePersonsToFileJson(employees, @"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+            var readEmployees = exportService.ReadPersonsFromFileJson<List<Employee>>(@"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
 
             //Asssert
             Assert.Equal(employees.Count, readEmployees.Count);
         }
 
         [Fact]
-        public void ReadPersonsToCsvWithEmployeesPositiveTest()
+        public void ReadPersonsFromFileJsonWithEmployeesPositiveTest()
         {
             //Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
@@ -93,8 +93,8 @@ namespace BankSystem.Data.Tests
             var exportService = new ExportService();
 
             //Act
-            exportService.WritePersonsToCsv(employees, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
-            var readEmployees = exportService.ReadPersonsToCsv<List<Employee>>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            exportService.WritePersonsToFileJson(employees, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            var readEmployees = exportService.ReadPersonsFromFileJson<List<Employee>>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
 
             foreach (var employee in readEmployees)
             {
@@ -106,7 +106,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void ReadPersonsToCsvWithClientsPositiveTest()
+        public void ReadPersonsFromFileJsonWithClientsPositiveTest()
         {
             //Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -115,8 +115,8 @@ namespace BankSystem.Data.Tests
             var exportService = new ExportService();
 
             //Act
-            exportService.WritePersonsToCsv(clients, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
-            var readClients = exportService.ReadPersonsToCsv<List<Client>>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            exportService.WritePersonsToFileJson(clients, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            var readClients = exportService.ReadPersonsFromFileJson<List<Client>>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
 
             foreach (var client in readClients)
             {

@@ -9,15 +9,6 @@ namespace ExportTool
 {
     public class ExportService
     {
-        //private string _pathToDirectory { get; set; }
-        //private string _csvFileName { get; set; }
-
-        //public ExportService(string pathToDirectory, string textFileName)
-        //{
-        //    _pathToDirectory = pathToDirectory;
-        //    _csvFileName = textFileName;
-        //}
-
         public void WriteClientsToCsv(List<Client> clients, string pathToDirectory, string csvFileName)
         {
             DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
@@ -70,7 +61,7 @@ namespace ExportTool
             return clientList;
         }
 
-        public void WritePersonsToCsv<T>(T person, string pathToDirectory, string csvFileName)
+        public void WritePersonsToFileJson<T>(T person, string pathToDirectory, string csvFileName)
         {
             DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
             if (!dirInfo.Exists)
@@ -82,7 +73,7 @@ namespace ExportTool
             File.WriteAllText(fullPath, serializePerson);
         }
 
-        public T ReadPersonsToCsv<T>(string pathToDirectory, string csvFileName)
+        public T ReadPersonsFromFileJson<T>(string pathToDirectory, string csvFileName)
         {
             string fullPath = Path.Combine(pathToDirectory, csvFileName);
             string deserializePerson = File.ReadAllText(fullPath);
