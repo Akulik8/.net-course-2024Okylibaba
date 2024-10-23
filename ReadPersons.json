@@ -1,0 +1,11 @@
+{
+  "Accounts": null,
+  "Id": "00000000-0000-0000-0000-000000000000",
+  "Name": "Gleb",
+  "Surname": "Ivanov",
+  "PhoneNumber": "444444",
+  "Passport": "44444444444",
+  "Address": "-----",
+  "Date": "2000-01-01",
+  "Bonus": 0
+}

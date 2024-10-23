@@ -3,28 +3,20 @@ using System.Globalization;
 using BankSystem.Domain.Models;
 using CsvHelper.Configuration;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace ExportTool
 {
     public class ExportService
     {
-        private string _pathToDirectory { get; set; }
-        private string _csvFileName { get; set; }
-
-        public ExportService(string pathToDirectory, string textFileName)
+        public void WriteClientsToCsv(List<Client> clients, string pathToDirectory, string csvFileName)
         {
-            _pathToDirectory = pathToDirectory;
-            _csvFileName = textFileName;
-        }
-
-        public void WriteClientsToCsv(List<Client> clients)
-        {
-            DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
             if (!dirInfo.Exists)
             {
                 dirInfo.Create();
             }
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(pathToDirectory, csvFileName);
             using (FileStream fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
             {
                 using (StreamWriter streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
@@ -44,11 +36,11 @@ namespace ExportTool
             }
         }
 
-        public List<Client> ReadClientsFromCsv()
+        public List<Client> ReadClientsFromCsv(string pathToDirectory, string csvFileName)
         {
             var clientList = new List<Client>();
 
-            string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+            string fullPath = Path.Combine(pathToDirectory, csvFileName);
 
             using (var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
             {
@@ -67,6 +59,27 @@ namespace ExportTool
                 }
             }
             return clientList;
+        }
+
+        public void WritePersonsToFileJson<T>(T person, string pathToDirectory, string jsonFileName)
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
+            if (!dirInfo.Exists)
+            {
+                dirInfo.Create();
+            }
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
+            string serializePerson = JsonConvert.SerializeObject(person, Formatting.Indented);
+            File.WriteAllText(fullPath, serializePerson);
+        }
+
+        public T ReadPersonsFromFileJson<T>(string pathToDirectory, string jsonFileName)
+        {
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
+            string deserializePerson = File.ReadAllText(fullPath);
+            T persons = JsonConvert.DeserializeObject<T>(deserializePerson);
+            
+            return persons;
         }
     }
 }
