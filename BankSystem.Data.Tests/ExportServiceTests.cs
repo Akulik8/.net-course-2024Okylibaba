@@ -68,6 +68,31 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
+        public void WritePersonsToFileJsonWithClientPositiveTest()
+        {
+            //Arrange
+            IClientStorage storage = new ClientStorage(new BankSystemDbContext());
+            Client client = new Client
+            {
+                Id = new Guid(),
+                Name = "Gleb",
+                Surname = "Ivanov",
+                PhoneNumber = "444444",
+                Date = new DateOnly(2000, 1, 1),
+                Passport = "44444444444",
+                Address = "-----",
+            };
+            var exportService = new ExportService();
+
+            //Act
+            exportService.WritePersonsToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+            var readClients = exportService.ReadPersonsFromFileJson<Client>(@"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+
+            //Asssert
+            Assert.Equal(client, readClients);
+        }
+
+        [Fact]
         public void WritePersonsToFileJsonWithEmployeesPositiveTest()
         {
             //Arrange
@@ -125,6 +150,32 @@ namespace BankSystem.Data.Tests
 
             //Assert
             Assert.NotEmpty(readClients);
+        }
+
+        [Fact]
+        public void ReadPersonsFromFileJsonWithClientPositiveTest()
+        {
+            //Arrange
+            IClientStorage storage = new ClientStorage(new BankSystemDbContext());
+            var exportService = new ExportService();
+            Client client = new Client
+            {
+                Id = new Guid(),
+                Name = "Gleb",
+                Surname = "Ivanov",
+                PhoneNumber = "444444",
+                Date = new DateOnly(2000, 1, 1),
+                Passport = "44444444444",
+                Address = "-----",
+            };
+
+            //Act
+            exportService.WritePersonsToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            var readClient = exportService.ReadPersonsFromFileJson<Client>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            storage.Add(readClient);
+
+            //Assert
+            Assert.Equal(readClient, client);
         }
     }
 }

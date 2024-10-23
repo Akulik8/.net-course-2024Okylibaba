@@ -1,44 +1,11 @@
-[
-  {
-    "Position": "Бухгалтер",
-    "Salary": 20000,
-    "DateStartWork": "2020-01-01",
-    "Contract": "Контракт заключен",
-    "Id": "5e4f52bb-155c-4992-af64-9e0c0ef0a00e",
-    "Name": "Иван",
-    "Surname": "Иванов",
-    "PhoneNumber": "1234567890",
-    "Passport": "1234 567890",
-    "Address": "-----",
-    "Date": "1990-01-15",
-    "Bonus": 0
-  },
-  {
-    "Position": "Бухгалтер",
-    "Salary": 20000,
-    "DateStartWork": "2020-01-01",
-    "Contract": "Контракт заключен",
-    "Id": "6b35cebe-c19d-4ff2-a6d6-6cb3e6757a3b",
-    "Name": "Петр",
-    "Surname": "Петров",
-    "PhoneNumber": "0987654321",
-    "Passport": "2345 678901",
-    "Address": "-----",
-    "Date": "1985-06-25",
-    "Bonus": 0
-  },
-  {
-    "Position": "Бухгалтер",
-    "Salary": 20000,
-    "DateStartWork": "2020-01-01",
-    "Contract": "Контракт заключен",
-    "Id": "5ecb4755-271a-458f-86a2-5a8b321a4054",
-    "Name": "Сергей",
-    "Surname": "Сергеев",
-    "PhoneNumber": "1111222233",
-    "Passport": "3456 789012",
-    "Address": "-----",
-    "Date": "2000-03-10",
-    "Bonus": 0
-  }
-]
+{
+  "Accounts": null,
+  "Id": "00000000-0000-0000-0000-000000000000",
+  "Name": "Gleb",
+  "Surname": "Ivanov",
+  "PhoneNumber": "444444",
+  "Passport": "44444444444",
+  "Address": "-----",
+  "Date": "2000-01-01",
+  "Bonus": 0
+}

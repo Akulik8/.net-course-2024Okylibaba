@@ -61,21 +61,21 @@ namespace ExportTool
             return clientList;
         }
 
-        public void WritePersonsToFileJson<T>(T person, string pathToDirectory, string csvFileName)
+        public void WritePersonsToFileJson<T>(T person, string pathToDirectory, string jsonFileName)
         {
             DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
             if (!dirInfo.Exists)
             {
                 dirInfo.Create();
             }
-            string fullPath = Path.Combine(pathToDirectory, csvFileName);
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
             string serializePerson = JsonConvert.SerializeObject(person, Formatting.Indented);
             File.WriteAllText(fullPath, serializePerson);
         }
 
-        public T ReadPersonsFromFileJson<T>(string pathToDirectory, string csvFileName)
+        public T ReadPersonsFromFileJson<T>(string pathToDirectory, string jsonFileName)
         {
-            string fullPath = Path.Combine(pathToDirectory, csvFileName);
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
             string deserializePerson = File.ReadAllText(fullPath);
             T persons = JsonConvert.DeserializeObject<T>(deserializePerson);
             
