@@ -110,7 +110,7 @@ namespace BankSystem.Data.Tests
             ThreadPool.QueueUserWorkItem(_ => 
             {
                 for (int i = 0; i < 10; i++)
-                {я
+                {
                     lock (lockObject)
                     {
                         accountTest.Amount += 100;
