@@ -163,25 +163,14 @@ namespace BankSystem.Data.Tests
                 Id = new Guid(),
                 Name = "Gleb",
                 Surname = "Ivanov",
-                PhoneNumber = "44444434",
+                PhoneNumber = "4444442543",
                 Date = new DateOnly(2000, 1, 1),
-                Passport = "44444444444234",
+                Passport = "44444444434544",
                 Address = "-----",
             };
-            Client client2 = new Client
-            {
-                Id = new Guid(),
-                Name = "Gleb",
-                Surname = "Ivanov",
-                PhoneNumber = "44444456",
-                Date = new DateOnly(2000, 1, 1),
-                Passport = "4444444444454",
-                Address = "-----",
-            };
-            List<Client> wsef = new List<Client> { client, client2 };
 
             //Act
-            exportService.WritePersonsToFileJson(wsef, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            exportService.WritePersonsToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
             var readClient = exportService.ReadPersonsFromFileJson<Client>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
             storage.Add(readClient);
 
