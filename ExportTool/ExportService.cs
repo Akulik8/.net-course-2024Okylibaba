@@ -4,6 +4,7 @@ using BankSystem.Domain.Models;
 using CsvHelper.Configuration;
 using System.Text;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace ExportTool
 {
@@ -78,7 +79,7 @@ namespace ExportTool
             string fullPath = Path.Combine(pathToDirectory, jsonFileName);
             string deserializePerson = File.ReadAllText(fullPath);
             T persons = JsonConvert.DeserializeObject<T>(deserializePerson);
-            
+
             return persons;
         }
     }

@@ -1,0 +1,161 @@
+﻿{
+  "Accounts": null,
+  "Id": "00256524-f351-4176-877a-d838333d601e",
+  "Name": "Фёдор",
+  "Surname": "Шарапов",
+  "PhoneNumber": "(915)229-80-18",
+  "Passport": "IПР 361319894",
+  "Address": "г. Тирасполь, Горная площадь",
+  "Date": "1963-03-18",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "34505cfc-7f87-4b8a-b10c-394781b35b00",
+  "Name": "Арсений",
+  "Surname": "Константинова",
+  "PhoneNumber": "(943)075-59-67",
+  "Passport": "IПР 495513265",
+  "Address": "г. Тирасполь, Трактовая пл.",
+  "Date": "1995-05-24",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "5f4ed915-4d04-47b3-9703-0f533850581d",
+  "Name": "Артём",
+  "Surname": "Селиверстова",
+  "PhoneNumber": "(961)295-51-78",
+  "Passport": "IПР 534096041",
+  "Address": "г. Тирасполь, Дачная пл.",
+  "Date": "1940-12-30",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "267e7df7-e9d9-4ec1-9112-3d31a5eb43d6",
+  "Name": "Илья",
+  "Surname": "Попова",
+  "PhoneNumber": "(919)074-51-82",
+  "Passport": "IПР 134934883",
+  "Address": "г. Тирасполь, ул. Мира",
+  "Date": "1934-09-28",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "9adac59e-a85c-4cfe-9cee-433b9501f271",
+  "Name": "Тамара",
+  "Surname": "Коновалов",
+  "PhoneNumber": "(925)666-48-03",
+  "Passport": "IПР 276589869",
+  "Address": "г. Тирасполь, ул. Советская",
+  "Date": "1993-02-03",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "53cf4468-d1b8-4015-bd18-5b96b81854d4",
+  "Name": "Василий",
+  "Surname": "Назарова",
+  "PhoneNumber": "(981)444-10-68",
+  "Passport": "IПР 963312389",
+  "Address": "г. Тирасполь, пр. Больничная",
+  "Date": "1950-04-30",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "0af79409-187b-4e42-b47d-17f26c117f34",
+  "Name": "Роман",
+  "Surname": "Евсеева",
+  "PhoneNumber": "(900)047-48-18",
+  "Passport": "IПР 258643722",
+  "Address": "г. Тирасполь, проспект Рабочая",
+  "Date": "1978-05-10",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "494fab91-e8d3-4d37-ba20-b2ad49748936",
+  "Name": "Борис",
+  "Surname": "Лазарев",
+  "PhoneNumber": "(926)327-80-47",
+  "Passport": "IПР 592062318",
+  "Address": "г. Тирасполь, площадь Рабочая",
+  "Date": "1920-01-21",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "76794245-77cc-43d2-9d9c-aa63efecba5e",
+  "Name": "Вадим",
+  "Surname": "Маслов",
+  "PhoneNumber": "(959)245-11-16",
+  "Passport": "IПР 986391011",
+  "Address": "г. Тирасполь, Энергетиков ул.",
+  "Date": "1937-05-03",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "d89d63bf-9f33-44e0-9e51-dd2414651444",
+  "Name": "Надежда",
+  "Surname": "Панова",
+  "PhoneNumber": "(982)682-00-11",
+  "Passport": "IПР 852831217",
+  "Address": "г. Тирасполь, пр. Ломоносова",
+  "Date": "1992-12-02",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "62a7a747-ca4b-4cb2-a97e-f056abcbfc4e",
+  "Name": "Матвей",
+  "Surname": "Кудряшов",
+  "PhoneNumber": "(953)845-15-88",
+  "Passport": "IПР 238421098",
+  "Address": "г. Тирасполь, Свободы пл.",
+  "Date": "1988-06-06",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "09e3ede9-56d5-4ca8-b4a6-3069a687263b",
+  "Name": "Степан",
+  "Surname": "Субботин",
+  "PhoneNumber": "(978)656-55-30",
+  "Passport": "IПР 162343904",
+  "Address": "г. Тирасполь, Первомайская улица",
+  "Date": "1926-05-04",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "2868a70e-4e53-45c2-a437-01a616fa49c8",
+  "Name": "Макар",
+  "Surname": "Тетерина",
+  "PhoneNumber": "(985)993-29-41",
+  "Passport": "IПР 472747827",
+  "Address": "г. Тирасполь, Дорожная площадь",
+  "Date": "1927-05-06",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "a159a5c6-12ed-4bc1-bdf8-2ff6205f919a",
+  "Name": "Вячеслав",
+  "Surname": "Моисеев",
+  "PhoneNumber": "(918)777-80-42",
+  "Passport": "IПР 820692046",
+  "Address": "г. Тирасполь, улица Майская",
+  "Date": "1978-08-06",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "e6862922-e5ee-4d33-b122-7f597d6f2f8b",
+  "Name": "Игнатий",
+  "Surname": "Князев",
+  "PhoneNumber": "(957)845-37-51",
+  "Passport": "IПР 222677359",
+  "Address": "г. Тирасполь, Школьный ул.",
+  "Date": "1957-05-23",
+  "Bonus": 0
+}{
+  "Accounts": null,
+  "Id": "e9a44f54-28c3-43ac-bf38-78e3b18c8d30",
+  "Name": "Сергей",
+  "Surname": "Воронов",
+  "PhoneNumber": "(909)061-27-80",
+  "Passport": "IПР 245138894",
+  "Address": "г. Тирасполь, Свердлова пл.",
+  "Date": "2004-02-05",
+  "Bonus": 0
+}
