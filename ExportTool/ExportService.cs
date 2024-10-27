@@ -62,7 +62,7 @@ namespace ExportTool
             return clientList;
         }
 
-        public void WritePersonsToFileJson<T>(T person, string pathToDirectory, string jsonFileName)
+        public void WritePersonsToFileJson<T>(List<T> person, string pathToDirectory, string jsonFileName) where T : class
         {
             DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
             if (!dirInfo.Exists)
@@ -70,7 +70,33 @@ namespace ExportTool
                 dirInfo.Create();
             }
             string fullPath = Path.Combine(pathToDirectory, jsonFileName);
-            string serializePerson = JsonConvert.SerializeObject(person, Formatting.Indented);
+            if (!File.Exists(fullPath))
+            {
+                File.WriteAllText(fullPath, "[]");
+            }
+            string json = File.ReadAllText(fullPath);
+            var personsList = JsonConvert.DeserializeObject<List<T>>(json) ?? new List<T>();
+            personsList.AddRange(person);
+            string serializePerson = JsonConvert.SerializeObject(personsList, Formatting.Indented);
+            File.WriteAllText(fullPath, serializePerson);
+        }
+
+        public void WritePersonToFileJson<T>(T person, string pathToDirectory, string jsonFileName) where T : class
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
+            if (!dirInfo.Exists)
+            {
+                dirInfo.Create();
+            }
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
+            if (!File.Exists(fullPath))
+            {
+                File.WriteAllText(fullPath, "[]");
+            }
+            string json = File.ReadAllText(fullPath);
+            var personsList = JsonConvert.DeserializeObject<List<T>>(json) ?? new List<T>();
+            personsList.Add(person);
+            string serializePerson = JsonConvert.SerializeObject(personsList, Formatting.Indented);
             File.WriteAllText(fullPath, serializePerson);
         }
 

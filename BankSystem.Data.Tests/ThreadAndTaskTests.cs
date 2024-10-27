@@ -12,14 +12,17 @@ namespace BankSystem.Data.Tests
         private const string DirectoryPath = @"E:\Practic\.net-course-2024Okylibaba\ClientJsonFiles";
 
         [Fact]          
-        public void ReadAndWriteClientsPositivrTest()
+        public void ReadAndWriteJsonClientsPositiveTest()
         {
+            //Arrange    
             var testDataGenerator = new TestDataGenerator();
             var exportService = new ExportService();
             var clientQueue = new ConcurrentQueue<Client>();
+            var clientsFromFile = new ConcurrentBag<Client>();
             int activeGenerators = 0;
             bool generating = true;
 
+            //Act
             if (!Directory.Exists(DirectoryPath))
             {
                 Directory.CreateDirectory(DirectoryPath);
@@ -34,7 +37,6 @@ namespace BankSystem.Data.Tests
 
             for (int i = 0; i < 5; i++)
             {
-
                 Interlocked.Increment(ref activeGenerators);
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
@@ -50,7 +52,8 @@ namespace BankSystem.Data.Tests
             int fileCounter = 1;
             string currentFileName = $"clients_{fileCounter}.json";
             int currentFileSize = 0;
-            var clientsList = new List<Client>();
+            string filePath = Path.Combine(DirectoryPath, currentFileName);
+         
 
             var writerThread = new Thread(() =>
             {
@@ -58,20 +61,19 @@ namespace BankSystem.Data.Tests
                 {
                     if (clientQueue.TryDequeue(out Client client))
                     {
-                        clientsList.Add(client);
                         string tempFile = Path.GetTempFileName();
-                        exportService.WritePersonsToFileJson<Client>(client, DirectoryPath, tempFile);
+
+                        exportService.WritePersonToFileJson(client, DirectoryPath, tempFile);
+                        File.AppendAllText(tempFile, ",\n");
 
                         var tempFileSize = new FileInfo(tempFile).Length;
-                        if (currentFileSize + tempFileSize > MaxFileSize)
+                        if (currentFileSize + tempFileSize >= MaxFileSize)
                         {
                             fileCounter++;
                             currentFileName = $"clients_{fileCounter}.json";
                             currentFileSize = 0;
                         }
-
-                        string filePath = Path.Combine(DirectoryPath, currentFileName);
-                        File.AppendAllText(filePath, File.ReadAllText(tempFile), Encoding.UTF8);
+                        exportService.WritePersonToFileJson(client, DirectoryPath, currentFileName);
                         currentFileSize += (int)tempFileSize;
 
                         File.Delete(tempFile);
@@ -87,10 +89,27 @@ namespace BankSystem.Data.Tests
             generating = false;
             writerThread.Join();
 
-            var generatedFiles = Directory.GetFiles(DirectoryPath, "*.json");
+            var readerThread = new Thread(() =>
+            {
+                var generatedFiles = Directory.GetFiles(DirectoryPath, "*.json");
 
-            Assert.Equal(7, generatedFiles.Count());
+                foreach ( var file in generatedFiles) 
+                { 
+                    var clients = exportService.ReadPersonsFromFileJson<List<Client>>(DirectoryPath, Path.GetFileName(file));
+                    foreach (var client in clients)
+                    {
+                        clientsFromFile.Add(client);
+                    }
+                }
+                Thread.Sleep(100);
+            });
 
+            readerThread.Start();
+            readerThread.Join();
+            int totalClientsDeserialized = clientsFromFile.Count;
+            
+            //Assert
+            Assert.Equal(totalClientsDeserialized, 100);
         }
 
         [Fact]

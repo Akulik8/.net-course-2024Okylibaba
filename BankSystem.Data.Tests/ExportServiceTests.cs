@@ -77,19 +77,19 @@ namespace BankSystem.Data.Tests
                 Id = new Guid(),
                 Name = "Gleb",
                 Surname = "Ivanov",
-                PhoneNumber = "444444",
+                PhoneNumber = "4423454444",
                 Date = new DateOnly(2000, 1, 1),
-                Passport = "44444444444",
+                Passport = "44444444342444",
                 Address = "-----",
             };
             var exportService = new ExportService();
 
             //Act
-            exportService.WritePersonsToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
-            var readClients = exportService.ReadPersonsFromFileJson<Client>(@"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+            exportService.WritePersonToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
+            var readClients = exportService.ReadPersonsFromFileJson<List<Client>>(@"E:\Practic\.net-course-2024Okylibaba\", "WritePersons.json");
 
             //Asssert
-            Assert.Equal(client, readClients);
+            Assert.Contains(client, readClients);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace BankSystem.Data.Tests
         {
             //Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
-            var employees = storage.Get(10, 1, null);
+            var employees = storage.Get(100, 1, null);
             var exportService = new ExportService();
 
             //Act
@@ -163,19 +163,19 @@ namespace BankSystem.Data.Tests
                 Id = new Guid(),
                 Name = "Gleb",
                 Surname = "Ivanov",
-                PhoneNumber = "4444442543",
+                PhoneNumber = "4444123442543",
                 Date = new DateOnly(2000, 1, 1),
-                Passport = "44444444434544",
+                Passport = "4444444443454234",
                 Address = "-----",
             };
 
             //Act
-            exportService.WritePersonsToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
-            var readClient = exportService.ReadPersonsFromFileJson<Client>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
-            storage.Add(readClient);
+            exportService.WritePersonToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            var readClient = exportService.ReadPersonsFromFileJson<List<Client>>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
+            storage.Add(readClient.First());
 
             //Assert
-            Assert.Equal(readClient, client);
+            Assert.Contains(client, readClient);
         }
     }
 }
