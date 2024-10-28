@@ -70,15 +70,26 @@ namespace ExportTool
                 dirInfo.Create();
             }
             string fullPath = Path.Combine(pathToDirectory, jsonFileName);
-            if (!File.Exists(fullPath))
+            string newPersonsJson = JsonConvert.SerializeObject(person, Formatting.Indented);
+
+            if (File.Exists(fullPath) && new FileInfo(fullPath).Length > 2)
             {
-                File.WriteAllText(fullPath, "[]");
+                using (var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    fileStream.Seek(-2, SeekOrigin.End);
+
+                    using (var writer = new StreamWriter(fileStream))
+                    {
+                        writer.Write(",\n");
+                        writer.Write("\n]");
+                    }
+                }
             }
-            string json = File.ReadAllText(fullPath);
-            var personsList = JsonConvert.DeserializeObject<List<T>>(json) ?? new List<T>();
-            personsList.AddRange(person);
-            string serializePerson = JsonConvert.SerializeObject(personsList, Formatting.Indented);
-            File.WriteAllText(fullPath, serializePerson);
+            else
+            {
+                File.WriteAllText(fullPath, newPersonsJson.Replace("\n", "\n"));
+            }
+
         }
 
         public void WritePersonToFileJson<T>(T person, string pathToDirectory, string jsonFileName) where T : class
@@ -89,15 +100,26 @@ namespace ExportTool
                 dirInfo.Create();
             }
             string fullPath = Path.Combine(pathToDirectory, jsonFileName);
-            if (!File.Exists(fullPath))
+            string newPersonJson = JsonConvert.SerializeObject(person, Formatting.Indented);
+
+            if (File.Exists(fullPath) && new FileInfo(fullPath).Length > 2)
             {
-                File.WriteAllText(fullPath, "[]");
+                using (var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    fileStream.Seek(-2, SeekOrigin.End);
+
+                    using (var writer = new StreamWriter(fileStream))
+                    {
+                        writer.Write(",\n  ");
+                        writer.Write(newPersonJson.Replace("\n", "\n  "));
+                        writer.Write("\n]");
+                    }
+                }
             }
-            string json = File.ReadAllText(fullPath);
-            var personsList = JsonConvert.DeserializeObject<List<T>>(json) ?? new List<T>();
-            personsList.Add(person);
-            string serializePerson = JsonConvert.SerializeObject(personsList, Formatting.Indented);
-            File.WriteAllText(fullPath, serializePerson);
+            else
+            {
+                File.WriteAllText(fullPath, "[\n  " + newPersonJson.Replace("\n", "\n  ") + "\n]");
+            }
         }
 
         public T ReadPersonsFromFileJson<T>(string pathToDirectory, string jsonFileName)

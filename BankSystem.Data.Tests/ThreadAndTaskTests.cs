@@ -9,7 +9,7 @@ namespace BankSystem.Data.Tests
     public class ThreadAndTaskTests
     {
         private const int MaxFileSize = 1024 * 5;
-        private const string DirectoryPath = @"E:\Practic\.net-course-2024Okylibaba\ClientJsonFiles";
+        private const string DirectoryPath = @"E:\Practic\ClientJsonFiles";
 
         [Fact]          
         public void ReadAndWriteJsonClientsPositiveTest()
@@ -19,8 +19,8 @@ namespace BankSystem.Data.Tests
             var exportService = new ExportService();
             var clientQueue = new ConcurrentQueue<Client>();
             var clientsFromFile = new ConcurrentBag<Client>();
-            int activeGenerators = 0;
-            bool generating = true;
+            int activeGeneratorsCount = 0;
+            bool isGenerating = true;
 
             //Act
             if (!Directory.Exists(DirectoryPath))
@@ -37,7 +37,7 @@ namespace BankSystem.Data.Tests
 
             for (int i = 0; i < 5; i++)
             {
-                Interlocked.Increment(ref activeGenerators);
+                Interlocked.Increment(ref activeGeneratorsCount);
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
                     var clients = testDataGenerator.GenerateClients(20);
@@ -45,7 +45,7 @@ namespace BankSystem.Data.Tests
                     {
                         clientQueue.Enqueue(client);
                     }
-                    Interlocked.Decrement(ref activeGenerators);
+                    Interlocked.Decrement(ref activeGeneratorsCount);
                 });
             }
 
@@ -57,14 +57,13 @@ namespace BankSystem.Data.Tests
 
             var writerThread = new Thread(() =>
             {
-                while (generating || !clientQueue.IsEmpty)
+                while (isGenerating || !clientQueue.IsEmpty)
                 {
                     if (clientQueue.TryDequeue(out Client client))
                     {
                         string tempFile = Path.GetTempFileName();
 
                         exportService.WritePersonToFileJson(client, DirectoryPath, tempFile);
-                        File.AppendAllText(tempFile, ",\n");
 
                         var tempFileSize = new FileInfo(tempFile).Length;
                         if (currentFileSize + tempFileSize >= MaxFileSize)
@@ -82,11 +81,11 @@ namespace BankSystem.Data.Tests
             });
 
             writerThread.Start();
-            while (Volatile.Read(ref activeGenerators) > 0)
+            while (Volatile.Read(ref activeGeneratorsCount) > 0)
             {
                 Thread.Sleep(100);
             }
-            generating = false;
+            isGenerating = false;
             writerThread.Join();
 
             var readerThread = new Thread(() =>
