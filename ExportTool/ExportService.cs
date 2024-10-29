@@ -4,6 +4,7 @@ using BankSystem.Domain.Models;
 using CsvHelper.Configuration;
 using System.Text;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace ExportTool
 {
@@ -61,7 +62,7 @@ namespace ExportTool
             return clientList;
         }
 
-        public void WritePersonsToFileJson<T>(T person, string pathToDirectory, string jsonFileName)
+        public void WritePersonsToFileJson<T>(List<T> person, string pathToDirectory, string jsonFileName) where T : class
         {
             DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
             if (!dirInfo.Exists)
@@ -69,8 +70,56 @@ namespace ExportTool
                 dirInfo.Create();
             }
             string fullPath = Path.Combine(pathToDirectory, jsonFileName);
-            string serializePerson = JsonConvert.SerializeObject(person, Formatting.Indented);
-            File.WriteAllText(fullPath, serializePerson);
+            string newPersonsJson = JsonConvert.SerializeObject(person, Formatting.Indented);
+
+            if (File.Exists(fullPath) && new FileInfo(fullPath).Length > 2)
+            {
+                using (var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    fileStream.Seek(-2, SeekOrigin.End);
+
+                    using (var writer = new StreamWriter(fileStream))
+                    {
+                        writer.Write(",\n");
+                        writer.Write("\n]");
+                    }
+                }
+            }
+            else
+            {
+                File.WriteAllText(fullPath, newPersonsJson.Replace("\n", "\n"));
+            }
+
+        }
+
+        public void WritePersonToFileJson<T>(T person, string pathToDirectory, string jsonFileName) where T : class
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
+            if (!dirInfo.Exists)
+            {
+                dirInfo.Create();
+            }
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
+            string newPersonJson = JsonConvert.SerializeObject(person, Formatting.Indented);
+
+            if (File.Exists(fullPath) && new FileInfo(fullPath).Length > 2)
+            {
+                using (var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    fileStream.Seek(-2, SeekOrigin.End);
+
+                    using (var writer = new StreamWriter(fileStream))
+                    {
+                        writer.Write(",\n  ");
+                        writer.Write(newPersonJson.Replace("\n", "\n  "));
+                        writer.Write("\n]");
+                    }
+                }
+            }
+            else
+            {
+                File.WriteAllText(fullPath, "[\n  " + newPersonJson.Replace("\n", "\n  ") + "\n]");
+            }
         }
 
         public T ReadPersonsFromFileJson<T>(string pathToDirectory, string jsonFileName)
@@ -78,7 +127,7 @@ namespace ExportTool
             string fullPath = Path.Combine(pathToDirectory, jsonFileName);
             string deserializePerson = File.ReadAllText(fullPath);
             T persons = JsonConvert.DeserializeObject<T>(deserializePerson);
-            
+
             return persons;
         }
     }

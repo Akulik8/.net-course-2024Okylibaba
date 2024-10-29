@@ -1,11 +1,90 @@
-{
-  "Accounts": null,
-  "Id": "00000000-0000-0000-0000-000000000000",
-  "Name": "Gleb",
-  "Surname": "Ivanov",
-  "PhoneNumber": "444444",
-  "Passport": "44444444444",
-  "Address": "-----",
-  "Date": "2000-01-01",
-  "Bonus": 0
-}
+[
+  {
+    "Accounts": null,
+    "Id": "42e25011-2e4a-44cc-8fc7-c55b27491384",
+    "Name": "Лаврентий",
+    "Surname": "Суворова",
+    "PhoneNumber": "(939)308-62-82",
+    "Passport": "IПР 927405664",
+    "Address": "г. Тирасполь, Заводская пл.",
+    "Date": "1992-12-04",
+    "Bonus": 0
+  },
+  {
+    "Accounts": null,
+    "Id": "12fa027a-104f-4c1b-9498-4632b251c600",
+    "Name": "Татьяна",
+    "Surname": "Смирнова",
+    "PhoneNumber": "(933)278-16-39",
+    "Passport": "IПР 876742239",
+    "Address": "г. Тирасполь, пл. Вокзальная",
+    "Date": "1950-03-06",
+    "Bonus": 0
+  },
+  {
+    "Accounts": null,
+    "Id": "3f2a79ce-3dd1-4018-8664-3d4857f2dd94",
+    "Name": "Фёдор",
+    "Surname": "Брагин",
+    "PhoneNumber": "(952)515-79-94",
+    "Passport": "IПР 421829689",
+    "Address": "г. Тирасполь, улица Почтовая",
+    "Date": "1944-01-27",
+    "Bonus": 0
+  },
+  {
+    "Accounts": null,
+    "Id": "57d7783c-d1a8-474a-bb04-c2fe8c09321d",
+    "Name": "Нина",
+    "Surname": "Рожкова",
+    "PhoneNumber": "(937)311-07-08",
+    "Passport": "IПР 167035936",
+    "Address": "г. Тирасполь, пл. Мира",
+    "Date": "1945-09-04",
+    "Bonus": 0
+  },
+  {
+    "Accounts": null,
+    "Id": "6e83a41e-e31b-49ce-8d1a-d0d170e89668",
+    "Name": "Алина",
+    "Surname": "Носкова",
+    "PhoneNumber": "(978)582-95-98",
+    "Passport": "IПР 869329264",
+    "Address": "г. Тирасполь, улица Дорожная",
+    "Date": "1987-06-10",
+    "Bonus": 0
+  },
+  {
+    "Accounts": null,
+    "Id": "01a4214b-fd55-47eb-8943-e9fba60ff0a4",
+    "Name": "Регина",
+    "Surname": "Рыбакова",
+    "PhoneNumber": "(942)673-46-70",
+    "Passport": "IПР 782746248",
+    "Address": "г. Тирасполь, Южная улица",
+    "Date": "1968-08-09",
+    "Bonus": 0
+  },
+  {
+    "Accounts": null,
+    "Id": "49a6ed38-bc96-4595-a0aa-b3e07c84e304",
+    "Name": "Ольга",
+    "Surname": "Блинова",
+    "PhoneNumber": "(946)497-76-71",
+    "Passport": "IПР 987177186",
+    "Address": "г. Тирасполь, Цветочная пл.",
+    "Date": "2002-06-28",
+    "Bonus": 0
+  },
+  {
+    "Accounts": null,
+    "Id": "f37e255c-7040-4a89-8973-059935e90139",
+    "Name": "Фёдор",
+    "Surname": "Бирюкова",
+    "PhoneNumber": "(919)446-48-17",
+    "Passport": "IПР 844173043",
+    "Address": "г. Тирасполь, Шоссейная улица",
+    "Date": "1978-07-01",
+    "Bonus": 0
+  }
+]

@@ -105,9 +105,7 @@ namespace Practice
                 PhoneNumber = "+37377760606",
                 Passport = "IПР 123321123",
                 Address = "г. Тирасполь, ул. Юности",
-                Date = new DateOnly(2010, 10, 16),
-                AccountNumber = 123456,
-                Balance = 412541,
+                Date = new DateOnly(2010, 10, 16)
             };
             Employee newEmployee = bankService.ConvertClientToEmployee(client, "Бухгалтер", 5000);
             UpdateContract(newEmployee);
