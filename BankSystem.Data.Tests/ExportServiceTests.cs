@@ -14,11 +14,11 @@ namespace BankSystem.Data.Tests
     public class ExportServiceTests
     {
         [Fact]
-        public void WriteClientsToCsvPositiveTest()
+        public async Task WriteClientsToCsvPositiveTest()
         {
             //Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
-            var clients = storage.Get(10,1,null);
+            var clients = await storage.GetAsync(10,1,null);
             var exportService = new ExportService();
 
             //Act
@@ -30,7 +30,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void ReadClientsFromCsvPositiveTest()
+        public async Task ReadClientsFromCsvPositiveTest()
         {
             //Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -44,7 +44,7 @@ namespace BankSystem.Data.Tests
 
             foreach (var client in readClients) 
             {
-                storage.Add(client);
+                await storage.AddAsync(client);
             }
 
             //Assert
@@ -52,11 +52,11 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void WritePersonsToFileJsonWithClientsPositiveTest()
+        public async Task WritePersonsToFileJsonWithClientsPositiveTest()
         {
             //Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
-            var clients = storage.Get(10, 1, null);
+            var clients = await storage.GetAsync(10, 1, null);
             var exportService = new ExportService();
 
             //Act
@@ -93,11 +93,11 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void WritePersonsToFileJsonWithEmployeesPositiveTest()
+        public async Task WritePersonsToFileJsonWithEmployeesPositiveTest()
         {
             //Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
-            var employees = storage.Get(100, 1, null);
+            var employees = await storage.GetAsync(100, 1, null);
             var exportService = new ExportService();
 
             //Act
@@ -109,7 +109,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void ReadPersonsFromFileJsonWithEmployeesPositiveTest()
+        public async Task ReadPersonsFromFileJsonWithEmployeesPositiveTest()
         {
             //Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
@@ -123,7 +123,7 @@ namespace BankSystem.Data.Tests
 
             foreach (var employee in readEmployees)
             {
-                storage.Add(employee);
+                await storage.AddAsync(employee);
             }
 
             //Assert
@@ -131,7 +131,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void ReadPersonsFromFileJsonWithClientsPositiveTest()
+        public async Task ReadPersonsFromFileJsonWithClientsPositiveTest()
         {
             //Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -145,7 +145,7 @@ namespace BankSystem.Data.Tests
 
             foreach (var client in readClients)
             {
-                storage.Add(client);
+                await storage.AddAsync(client);
             }
 
             //Assert
@@ -153,7 +153,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void ReadPersonsFromFileJsonWithClientPositiveTest()
+        public async Task ReadPersonsFromFileJsonWithClientPositiveTest()
         {
             //Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -172,7 +172,7 @@ namespace BankSystem.Data.Tests
             //Act
             exportService.WritePersonToFileJson(client, @"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
             var readClient = exportService.ReadPersonsFromFileJson<List<Client>>(@"E:\Practic\.net-course-2024Okylibaba\", "ReadPersons.json");
-            storage.Add(readClient.First());
+            await storage.AddAsync(readClient.First());
 
             //Assert
             Assert.Contains(client, readClient);

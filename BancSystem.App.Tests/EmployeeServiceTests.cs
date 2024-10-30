@@ -14,7 +14,7 @@ namespace BankSystem.App.Tests
     public class EmployeeServiceTests
     {
         [Fact]
-        public void AddEmployeePositiveTest()
+        public async Task AddEmployeePositiveTest()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
@@ -25,17 +25,17 @@ namespace BankSystem.App.Tests
             // Act
             foreach (var employee in employees)
             {
-                employeeService.AddEmployee(employee);
+                await employeeService.AddEmployeeAsync(employee);
             }
 
             Employee expectedEmployee = employees[0];
 
             // Assert
-            Assert.Contains(expectedEmployee, storage.Get(100,1,null));
+            Assert.Contains(expectedEmployee, await storage.GetAsync(100,1,null));
         }
 
         [Fact]
-        public void AddEmployeeThrowsPersonAlreadyExistsException()
+        public async Task AddEmployeeThrowsPersonAlreadyExistsException()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
@@ -46,17 +46,17 @@ namespace BankSystem.App.Tests
             // Act
             foreach (var employee in employees)
             {
-                employeeService.AddEmployee(employee);
+                await employeeService.AddEmployeeAsync(employee);
             }
 
             Employee expectedEmployee = employees[0];
 
             // Assert
-            Assert.Throws<PersonAlreadyExistsException>(() => employeeService.AddEmployee(expectedEmployee));
+            await Assert.ThrowsAsync<PersonAlreadyExistsException>(() => employeeService.AddEmployeeAsync(expectedEmployee));
         }
 
         [Fact]
-        public void AddEmployeeThrowsPersonTooYoungException()
+        public async Task AddEmployeeThrowsPersonTooYoungException()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
@@ -71,11 +71,11 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            Assert.Throws<PersonTooYoungException>(() => employeeService.AddEmployee(employee));
+            await Assert.ThrowsAsync<PersonTooYoungException>(() => employeeService.AddEmployeeAsync(employee));
         }
 
         [Fact]
-        public void AddEmployeeThrowsNoPassportException()
+        public async Task AddEmployeeThrowsNoPassportException()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
@@ -90,11 +90,11 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            Assert.Throws<NoPassportException>(() => employeeService.AddEmployee(employee));
+            await Assert.ThrowsAsync<NoPassportException>(() => employeeService.AddEmployeeAsync(employee));
         }
 
         [Fact]
-        public void UpdateEmployeePositivTest()
+        public async Task UpdateEmployeePositivTest()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
@@ -115,7 +115,7 @@ namespace BankSystem.App.Tests
                 DateStartWork = new DateOnly(2020, 1, 1)
             };
 
-            storage.Add(employee);
+            await storage.AddAsync(employee);
 
             var updatedEmployee = new Employee()
             {
@@ -133,17 +133,17 @@ namespace BankSystem.App.Tests
             };
 
             // Act
-            employeeService.UpdateEmployee(updatedEmployee);
+            await employeeService.UpdateEmployeeAsync(updatedEmployee);
 
             // Assert
-            var employees = storage.GetById(employee.Id);
+            var employees = await storage.GetByIdAsync(employee.Id);
             var myEmployee = employees.LastOrDefault(e => e.Id == employee.Id);
 
             Assert.Equal(myEmployee.Id, updatedEmployee.Id);
         }
 
         [Fact]
-        public void UpdateEmployeeThrowNotFoundException()
+        public async Task UpdateEmployeeThrowNotFoundException()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
@@ -164,11 +164,11 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            Assert.Throws<NotFoundException>(() => employeeService.UpdateEmployee(newEmployee));
+            await Assert.ThrowsAsync<NotFoundException>(() => employeeService.UpdateEmployeeAsync(newEmployee));
         }
 
         [Fact]
-        public void GetEmployeesPositiveTest()
+        public async Task GetEmployeesPositiveTest()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
@@ -216,16 +216,16 @@ namespace BankSystem.App.Tests
                 DateStartWork = new DateOnly(2020, 1, 1)
             };
 
-            employeeService.AddEmployee(employee1);
-            employeeService.AddEmployee(employee2);
-            employeeService.AddEmployee(employee3);
+            await employeeService.AddEmployeeAsync(employee1);
+            await employeeService.AddEmployeeAsync(employee2);
+            await employeeService.AddEmployeeAsync(employee3);
 
             // Act
-            var resultByName = employeeService.GetEmployeesByFilter(100, 1, с => с.Name == "Иван");
-            var resultBySurname = employeeService.GetEmployeesByFilter(100, 1, с => с.Surname == "Петров");
-            var resultByPhone = employeeService.GetEmployeesByFilter(100, 1, с => с.PhoneNumber == "1111222233");
-            var resultByPassport = employeeService.GetEmployeesByFilter(100, 1, с => с.Passport == "2345 678901");
-            var resultByDateRange = employeeService.GetEmployeesByFilter(100, 1, с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
+            var resultByName = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Name == "Иван");
+            var resultBySurname = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Surname == "Петров");
+            var resultByPhone = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.PhoneNumber == "1111222233");
+            var resultByPassport = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Passport == "2345 678901");
+            var resultByDateRange = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
 
 
             // Assert 

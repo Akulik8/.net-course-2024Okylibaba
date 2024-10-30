@@ -12,7 +12,7 @@ namespace BankSystem.Data.Tests
     public class ClientStorageTests
     {
         [Fact]
-        public void AddClientPositiveTest()
+        public async Task AddClientPositiveTest()
         {
             // Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -47,19 +47,19 @@ namespace BankSystem.Data.Tests
                     });
                 }
 
-                storage.Add(client);
+                await storage.AddAsync(client);
                 foreach (var account in accounts)
-                    storage.AddAccount(client.Id, account);
+                   await storage.AddAccountAsync(client.Id, account);
             }
 
             Client expectedClient = clients[0];
 
             // Assert
-            Assert.Contains(expectedClient, storage.Get(1000,1,null));
+            Assert.Contains(expectedClient, await storage.GetAsync(1000,1,null));
         }
 
         [Fact]
-        public void UpdateClientPositiveTest()
+        public async Task UpdateClientPositiveTest()
         {
             // Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -78,7 +78,7 @@ namespace BankSystem.Data.Tests
                 Address = "-----",
             };
 
-            storage.Add(client);
+            await storage.AddAsync(client);
 
             var updatedClient = new Client
             {
@@ -91,15 +91,15 @@ namespace BankSystem.Data.Tests
                 Address = client.Address
             };
 
-            storage.Update(client.Id, updatedClient);
-            var dictionaryClient = storage.GetById(client.Id);
+            await storage.UpdateAsync(client.Id, updatedClient);
+            var dictionaryClient = await storage.GetByIdAsync(client.Id);
             
             // Assert
             Assert.Equal(dictionaryClient.Keys.FirstOrDefault(c => c.Id == updatedClient.Id), updatedClient);
         }
 
         [Fact]
-        public void DeleteClientPositiveTest()
+        public async Task DeleteClientPositiveTest()
         {
             // Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -118,16 +118,16 @@ namespace BankSystem.Data.Tests
                 Address = "-----",
             };
 
-            storage.Add(client);
-            storage.Delete(client.Id);
-            var dictionaryClient = storage.GetById(client.Id);
+            await storage.AddAsync(client);
+            await storage.DeleteAsync(client.Id);
+            var dictionaryClient = await storage.GetByIdAsync(client.Id);
 
             // Assert
             Assert.NotEqual(dictionaryClient.Keys.FirstOrDefault(c => c.Id == client.Id), client);
         }
 
         [Fact]
-        public void AddAccountPositiveTest()
+        public async Task AddAccountPositiveTest()
         {
             // Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -146,7 +146,7 @@ namespace BankSystem.Data.Tests
                 Address = "-----",
             };
 
-            storage.Add(client);
+            await storage.AddAsync(client);
 
             var account = new Account
             {
@@ -154,9 +154,9 @@ namespace BankSystem.Data.Tests
                 CurrencyName = "Ðóáëü ÐÔ"
             };
 
-            storage.AddAccount(client.Id, account);
+            await storage.AddAccountAsync(client.Id, account);
 
-            var dictionaryClient = storage.GetById(client.Id);
+            var dictionaryClient = await storage.GetByIdAsync(client.Id);
             var accounts = dictionaryClient.Values;
             var newAccount = accounts.LastOrDefault();
 
@@ -165,7 +165,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void UpdateAccountPositiveTest()
+        public async Task UpdateAccountPositiveTest()
         {
             // Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -184,15 +184,15 @@ namespace BankSystem.Data.Tests
                 Address = "-----",
             };
 
-            storage.Add(client);
+            await storage.AddAsync(client);
 
             var oldAccount = new Account { Id = new Guid(), ClientId = client.Id, Amount = 1000, CurrencyName = "Åâðî" };
-            storage.AddAccount(client.Id, oldAccount);
+            await storage.AddAccountAsync(client.Id, oldAccount);
             var newAccount = new Account { Id = oldAccount.Id, ClientId = client.Id, Amount = 2000, CurrencyName = "Ðóáëü ÐÔ" };
 
-            storage.UpdateAccount(newAccount);
+            await storage.UpdateAccountAsync(newAccount);
 
-            var newClient = storage.GetById(client.Id);
+            var newClient = await storage.GetByIdAsync(client.Id);
             var accounts = newClient.Values;
             var updatedAccount = accounts.FirstOrDefault();
             var myAccount = updatedAccount.First(a => a.Id.Equals(newAccount.Id));
@@ -203,7 +203,7 @@ namespace BankSystem.Data.Tests
 
 
         [Fact]
-        public void DeleteAccountPositiveTest()
+        public async Task DeleteAccountPositiveTest()
         {
             // Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -222,15 +222,15 @@ namespace BankSystem.Data.Tests
                 Address = "-----",
             };
 
-            storage.Add(client);
+            await storage.AddAsync(client);
 
             var account = new Account { Id = new Guid(), ClientId = client.Id, Amount = 1000, CurrencyName = "Åâðî" };
 
-            storage.AddAccount(client.Id, account);
+            await storage.AddAccountAsync(client.Id, account);
 
-            storage.DeleteAccount(account.Id);
+            await storage.DeleteAccountAsync(account.Id);
 
-            var newClient = storage.GetById(client.Id);
+            var newClient = await storage.GetByIdAsync(client.Id);
             var accounts = newClient.Values;
             var updatedAccount = accounts.FirstOrDefault();
             
@@ -239,7 +239,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetClientsByParametersWithPaginationTest()
+        public async Task GetClientsByParametersWithPaginationTest()
         {
             // Arrange
             IClientStorage storage = new ClientStorage(new BankSystemDbContext());
@@ -280,11 +280,12 @@ namespace BankSystem.Data.Tests
                 Address = "-----",
             };
 
-            storage.Add(client);
-            storage.Add(client2);
-            storage.Add(client3);
+            await storage.AddAsync(client);
+            await storage.AddAsync(client2);
+            await storage.AddAsync(client3);
 
-            var count = storage.Get(10, 1,x => x.Name == "Gleb").Count;
+            var listClient = await storage.GetAsync(10, 1,x => x.Name == "Gleb");
+            var count = listClient.Count();
 
             // Assert
             Assert.Equal(3, count);

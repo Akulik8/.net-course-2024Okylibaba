@@ -1,5 +1,6 @@
 ﻿using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,27 +19,27 @@ namespace BankSystem.Data.Storages
             _bankSystemDbContext = bankSystemDbContext;
         }
 
-        public void Add(Employee employee)
+        public async Task AddAsync(Employee employee)
         {
-            _bankSystemDbContext.Employees.Add(employee);
-            _bankSystemDbContext.SaveChanges();
+            await _bankSystemDbContext.Employees.AddAsync(employee);
+            await _bankSystemDbContext.SaveChangesAsync();
         }
 
-        public void Delete(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            var employee = _bankSystemDbContext.Employees.FirstOrDefault(e => e.Id == id);
+            var employee = await _bankSystemDbContext.Employees.FirstOrDefaultAsync(e => e.Id == id);
 
             if (employee != null)
             {
                 _bankSystemDbContext.Employees.Remove(employee);
-                _bankSystemDbContext.SaveChanges();
+                await _bankSystemDbContext.SaveChangesAsync();
             }
         }
 
-        public void Update(Guid id, Employee newEmployee) 
+        public async Task UpdateAsync(Guid id, Employee newEmployee) 
         {
-            var employee = _bankSystemDbContext.Employees
-                .FirstOrDefault(e => e.Id == newEmployee.Id);
+            var employee = await _bankSystemDbContext.Employees
+                .FirstOrDefaultAsync(e => e.Id == newEmployee.Id);
 
             if (employee != null)
             {
@@ -53,26 +54,29 @@ namespace BankSystem.Data.Storages
                 employee.Position = newEmployee.Position;
                 employee.Salary = newEmployee.Salary;
 
-                _bankSystemDbContext.SaveChanges();
+                await _bankSystemDbContext.SaveChangesAsync();
             }
         }
 
-        public List<Employee> GetById(Guid id)
+        public async Task<List<Employee>> GetByIdAsync(Guid id)
         {
-            var employee = _bankSystemDbContext.Employees
-                .Where(e => e.Id == id)
-                .ToList();
+            var employee = await _bankSystemDbContext.Employees
+                .FirstOrDefaultAsync(e => e.Id == id);
+            if (employee != null)
+            {
+                return new List<Employee> { employee };
+            }
 
-            return employee;
+            return new List<Employee>();
         }
 
-        public List<Employee> Get(int pageSize, int pageNumber, Func<Employee, bool>? filter)
+        public async Task<List<Employee>> GetAsync(int pageSize, int pageNumber, Expression<Func<Employee, bool>>? filter)
         {
             var query = _bankSystemDbContext.Employees.AsQueryable();
 
             if (filter != null)
             {
-                query = query.Where(filter).AsQueryable();
+                query = query.Where(filter);
             }
 
             query = query
@@ -80,7 +84,7 @@ namespace BankSystem.Data.Storages
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
     }
 }

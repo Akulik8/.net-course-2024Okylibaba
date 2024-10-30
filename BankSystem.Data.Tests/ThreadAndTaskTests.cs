@@ -108,7 +108,7 @@ namespace BankSystem.Data.Tests
             int totalClientsDeserialized = clientsFromFile.Count;
             
             //Assert
-            Assert.Equal(totalClientsDeserialized, 100);
+            Assert.Equal(100, totalClientsDeserialized);
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace BankSystem.Data.Tests
             }
 
             //Assert
-            Assert.Equal(accountTest.Amount, 2000);
+            Assert.Equal(2000, accountTest.Amount);
         }
     }
 }

@@ -19,15 +19,15 @@ namespace BankSystem.Data.Storages
             _bankSystemDbContext = bankSystemDbContext;
         }
 
-        public void Add(Client client)
+        public async Task AddAsync(Client client)
         {
             if (client.Id == Guid.Empty)
             {
                 client.Id = Guid.NewGuid();
             }
 
-            _bankSystemDbContext.Clients.Add(client);
-            _bankSystemDbContext.SaveChanges();
+            await _bankSystemDbContext.Clients.AddAsync(client);
+            await _bankSystemDbContext.SaveChangesAsync();
 
             var defaultAccount = new Account
             {
@@ -37,26 +37,26 @@ namespace BankSystem.Data.Storages
                 CurrencyName = "Доллар США"
             };
 
-            _bankSystemDbContext.Accounts.Add(defaultAccount);
-            _bankSystemDbContext.SaveChanges();
+            await _bankSystemDbContext.Accounts.AddAsync(defaultAccount);
+            await _bankSystemDbContext.SaveChangesAsync();
         }
 
-        public void Delete(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            var client = _bankSystemDbContext.Clients
-                        .FirstOrDefault(c => c.Id == id);
+            var client = await _bankSystemDbContext.Clients
+                            .FirstOrDefaultAsync(c => c.Id == id);
 
             if (client != null)
             {
                 _bankSystemDbContext.Clients.Remove(client);
-                _bankSystemDbContext.SaveChanges();
+                await _bankSystemDbContext.SaveChangesAsync();
             }
         }
 
-        public void Update(Guid id, Client newClient) 
+        public async Task UpdateAsync(Guid id, Client newClient)
         {
-            var client = _bankSystemDbContext.Clients
-               .FirstOrDefault(c => c.Id == newClient.Id);
+            var client = await _bankSystemDbContext.Clients
+                   .FirstOrDefaultAsync(c => c.Id == newClient.Id);
             if (client != null)
             {
                 client.Name = newClient.Name;
@@ -66,15 +66,15 @@ namespace BankSystem.Data.Storages
                 client.Address = newClient.Address;
                 client.Date = newClient.Date;
 
-                _bankSystemDbContext.SaveChanges();
+                await _bankSystemDbContext.SaveChangesAsync();
             }
         }
 
-        public Dictionary<Client, List<Account>> GetById(Guid id)
+        public async Task<Dictionary<Client, List<Account>>> GetByIdAsync(Guid id)
         {
-            var clientWithAccounts = _bankSystemDbContext.Clients
+            var clientWithAccounts = await _bankSystemDbContext.Clients
                 .Include(c => c.Accounts)
-                .FirstOrDefault(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id);
 
             if (clientWithAccounts != null)
             {
@@ -87,13 +87,13 @@ namespace BankSystem.Data.Storages
             return new Dictionary<Client, List<Account>>();
         }
 
-        public List<Client> Get(int pageSize, int pageNumber, Func<Client, bool>? filter)
+        public async Task<List<Client>> GetAsync(int pageSize, int pageNumber, Expression<Func<Client, bool>>? filter)
         {
             var query = _bankSystemDbContext.Clients.AsQueryable();
 
             if (filter != null)
             {
-                query = query.Where(filter).AsQueryable();
+                query = query.Where(filter);
             }
 
             query = query
@@ -101,39 +101,40 @@ namespace BankSystem.Data.Storages
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
 
-        public void AddAccount(Guid Id, Account account)
+
+        public async Task AddAccountAsync(Guid id, Account account)
         {
-            account.ClientId = Id;
-            _bankSystemDbContext.Accounts.Add(account);
-            _bankSystemDbContext.SaveChanges();
+            account.ClientId = id;
+            await _bankSystemDbContext.Accounts.AddAsync(account);
+            await _bankSystemDbContext.SaveChangesAsync();
         }
 
-        public void UpdateAccount(Account newAccount) 
+        public async Task UpdateAccountAsync(Account newAccount)
         {
-            var account = _bankSystemDbContext.Accounts
-                      .FirstOrDefault(a => a.Id == newAccount.Id);
+            var account = await _bankSystemDbContext.Accounts
+                          .FirstOrDefaultAsync(a => a.Id == newAccount.Id);
 
             if (account != null)
             {
                 account.CurrencyName = newAccount.CurrencyName;
                 account.Amount = newAccount.Amount;
 
-                _bankSystemDbContext.SaveChanges();
+                await _bankSystemDbContext.SaveChangesAsync();
             }
         }
 
-        public void DeleteAccount(Guid id) 
+        public async Task DeleteAccountAsync(Guid id)
         {
-            var account = _bankSystemDbContext.Accounts
-                  .FirstOrDefault(a => a.Id == id);
+            var account = await _bankSystemDbContext.Accounts
+                      .FirstOrDefaultAsync(a => a.Id == id);
 
             if (account != null)
             {
                 _bankSystemDbContext.Accounts.Remove(account);
-                _bankSystemDbContext.SaveChanges();
+                await _bankSystemDbContext.SaveChangesAsync();
             }
         }
     }
