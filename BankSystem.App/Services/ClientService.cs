@@ -21,14 +21,17 @@ namespace BankSystem.App.Services
             _clientStorage = clientStorage;
         }
 
-        public Dictionary<Client, List<Account>> Get(Client client)
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
+        public async Task<Dictionary<Client, List<Account>>> GetAsync(Client client)
         {
-            return _clientStorage.GetById(client.Id);
+            return await _clientStorage.GetByIdAsync(client.Id);
         }
 
-        public void AddClient(Client client)
+        public async Task AddClientAsync(Client client)
         {
-            if (_clientStorage.GetById(client.Id).Any())
+            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
+            if (existingClient.Any())
                 throw new PersonAlreadyExistsException("Этот клиент уже есть.");
 
             DateTime today = DateTime.Today;
@@ -39,52 +42,88 @@ namespace BankSystem.App.Services
             if (string.IsNullOrEmpty(client.Passport))
                 throw new NoPassportException("У клиента нет паспортных данных.");
 
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
         }
 
-        public void RemoveClient(Client client)
+        public async Task RemoveClientAsync(Client client)
         {
-            if (!_clientStorage.GetById(client.Id).Any())
+            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
+            if (!existingClient.Any())
                 throw new NotFoundException("Клиент не найден.");
 
-            _clientStorage.Delete(client.Id);
+            await _clientStorage.DeleteAsync(client.Id);
         }
 
-        public void UpdateClient(Client newClient)
+        public async Task UpdateClientAsync(Client newClient)
         {
-            if (!_clientStorage.GetById(newClient.Id).Any())
+            var existingClient = await _clientStorage.GetByIdAsync(newClient.Id);
+            if (!existingClient.Any())
                 throw new NotFoundException("Клиент не найден.");
+
             if (newClient == null)
                 throw new Exception("Нет сведений о новом клиенте.");
 
-            _clientStorage.Update(newClient.Id, newClient);
+            await _clientStorage.UpdateAsync(newClient.Id, newClient);
         }
 
-        public void AddAccountToClient(Client client, Account account)
+        public async Task AddAccountToClientAsync(Client client, Account account)
         {
-            if (!_clientStorage.GetById(client.Id).Any())
+            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
+            if (!existingClient.Any())
                 throw new NotFoundException("Клиент не найден.");
+
             if (account == null)
                 throw new Exception("Лицевой счет не может быть нулевым.");
-            _clientStorage.AddAccount(client.Id, account);
+
+            await _clientStorage.AddAccountAsync(client.Id, account);
         }
 
-        public void EditAccount(Account newAccount)
+        public async Task EditAccountAsync(Account newAccount)
         {
             if (newAccount == null)
                 throw new Exception("Нет сведений о новом лицевом счете.");
 
-            _clientStorage.UpdateAccount(newAccount);
+            await _clientStorage.UpdateAccountAsync(newAccount);
         }
 
-        public void DeleteAccount(Account account)
+        public async Task DebitingMoneyFromAccount(Client client, Account account, decimal cash)
         {
-            _clientStorage.DeleteAccount(account.Id);
+            await _semaphore.WaitAsync();
+            try
+            {
+                var clientDictionary = await _clientStorage.GetByIdAsync(client.Id);
+
+                if (clientDictionary.TryGetValue(client, out var accounts))
+                {
+                    foreach (var item in accounts)
+                    {
+                        if (item.Id == account.Id)
+                        {
+                            if (item.Amount < cash)
+                                throw new Exception("Недостаточно сердств на счёте.");
+                            item.Amount -= cash;
+                            await _clientStorage.UpdateAccountAsync(item);
+                            return;
+                        }
+                    }
+                }
+                else
+                    throw new NotFoundException("Клиент не найден");
+            }
+            finally 
+            {
+                _semaphore.Release();
+            }
         }
 
-        public List<Client> Get(int pageSize, int pageNumber, Func<Client, bool>? filters)
+        public async Task DeleteAccountAsync(Account account)
         {
-            return _clientStorage.Get(pageSize, pageNumber, filters);
+            await _clientStorage.DeleteAccountAsync(account.Id);
+        }
+
+        public async Task<List<Client>> GetAsync(int pageSize, int pageNumber, Expression<Func<Client, bool>>? filter)
+        {
+            return await _clientStorage.GetAsync(pageSize, pageNumber, filter);
         }
     }
 }

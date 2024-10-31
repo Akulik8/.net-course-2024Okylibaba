@@ -20,14 +20,15 @@ namespace BankSystem.App.Services
             _employeeStorage = employeeStorage;
         }
 
-        public List<Employee> Get(Employee employee)
+        public async Task<List<Employee>> GetAsync(Employee employee)
         {
-            return _employeeStorage.GetById(employee.Id);
+            return await _employeeStorage.GetByIdAsync(employee.Id);
         }
 
-        public void AddEmployee(Employee employee)
+        public async Task AddEmployeeAsync(Employee employee)
         {
-            if (_employeeStorage.GetById(employee.Id).Any())
+            var existingEmployee = await _employeeStorage.GetByIdAsync(employee.Id);
+            if (existingEmployee.Any())
                 throw new PersonAlreadyExistsException("Этот сотрудник уже есть.");
 
             DateTime today = DateTime.Today;
@@ -37,30 +38,32 @@ namespace BankSystem.App.Services
             if (string.IsNullOrEmpty(employee.Passport))
                 throw new NoPassportException("У сотрудника нет паспортных данных.");
 
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
         }
 
-        public void RemoveClient(Employee employee)
+        public async Task RemoveClientAsync(Employee employee)
         {
-            if (!_employeeStorage.GetById(employee.Id).Any())
+            var existingEmployee = await _employeeStorage.GetByIdAsync(employee.Id);
+            if (!existingEmployee.Any())
                 throw new NotFoundException("Сотрудник не найден.");
 
-            _employeeStorage.Delete(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id);
         }
 
-        public void UpdateEmployee(Employee newEmployee)
+        public async Task UpdateEmployeeAsync(Employee newEmployee)
         {
-            if (!_employeeStorage.GetById(newEmployee.Id).Any())
+            var existingEmployee = await _employeeStorage.GetByIdAsync(newEmployee.Id);
+            if (!existingEmployee.Any())
                 throw new NotFoundException("Сотрудник не найден.");
             if (newEmployee == null)
                 throw new Exception("Нет сведений о новом сотруднике.");
 
-            _employeeStorage.Update(newEmployee.Id, newEmployee);
+            await _employeeStorage.UpdateAsync(newEmployee.Id, newEmployee);
         }
 
-        public List<Employee> GetEmployeesByFilter(int pageSize, int pageNumber, Func<Employee, bool>? filter)
+        public async Task<List<Employee>> GetEmployeesByFilterAsync(int pageSize, int pageNumber, Expression<Func<Employee, bool>>? filter)
         {
-            return _employeeStorage.Get(pageSize, pageNumber, filter);
+            return await _employeeStorage.GetAsync(pageSize, pageNumber, filter);
         }
     }
 }

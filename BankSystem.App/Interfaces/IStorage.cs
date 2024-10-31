@@ -9,14 +9,14 @@ namespace BankSystem.App.Interfaces
 {
     public interface IStorage<T, R>
     {
-        public R GetById(Guid id);
+        public Task<R> GetByIdAsync(Guid id);
 
-        public List<T> Get(int pageSize, int pageNumber, Func<T, bool>? filters);
+        public Task<List<T>> GetAsync(int pageSize, int pageNumber, Expression<Func<T, bool>>? filter);
 
-        public void Add(T item);
+        public Task AddAsync(T item);
         
-        public void Update(Guid id, T newItem);
+        public Task UpdateAsync(Guid id, T newItem);
 
-        public void Delete(Guid id);
+        public Task DeleteAsync(Guid id);
     }
 }

@@ -13,7 +13,7 @@ namespace BankSystem.Data.Tests
     public class EmployeeStorageTests
     {
         [Fact]
-        public void AddEmployeePositiveTest()
+        public async Task AddEmployeePositiveTest()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
@@ -24,17 +24,17 @@ namespace BankSystem.Data.Tests
             // Act
             foreach (var employee in employees)
             {
-                storage.Add(employee);
+                await storage.AddAsync(employee);
             }
 
             Employee expectedEmployee = employees[0];
 
             // Assert
-            Assert.Contains(expectedEmployee, storage.Get(10,1,null));
+            Assert.Contains(expectedEmployee, await storage.GetAsync(10, 1, null));
         }
 
         [Fact]
-        public void UpdateEmployeetPositiveTest()
+        public async Task UpdateEmployeetPositiveTest()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
@@ -57,7 +57,7 @@ namespace BankSystem.Data.Tests
                 DateStartWork = new DateOnly(2020, 1, 1)
             };
 
-            storage.Add(employee);
+            await storage.AddAsync(employee);
 
             Employee newEmployee = new Employee()
             {
@@ -74,9 +74,9 @@ namespace BankSystem.Data.Tests
                 DateStartWork = employee.DateStartWork
             };
 
-            storage.Update(newEmployee.Id, newEmployee);
+            await storage.UpdateAsync(newEmployee.Id, newEmployee);
 
-            var employees = storage.GetById(employee.Id);
+            var employees = await storage.GetByIdAsync(employee.Id);
             var myEmployee = employees.FirstOrDefault(e => e.Id == employee.Id);
 
             Assert.Equal(myEmployee.Id, newEmployee.Id);
@@ -84,7 +84,7 @@ namespace BankSystem.Data.Tests
 
 
         [Fact]
-        public void DeleteEmployeePositiveTest()
+        public async Task DeleteEmployeePositiveTest()
         {
             // Arrange
             IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new BankSystemDbContext());
@@ -108,11 +108,11 @@ namespace BankSystem.Data.Tests
                 DateStartWork = new DateOnly(2020, 1, 1)
             };
 
-            storage.Add(employee);
+            await storage.AddAsync(employee);
 
-            storage.Delete(employee.Id);
+            await storage.DeleteAsync(employee.Id);
 
-            var newEmployee = storage.GetById(employee.Id);
+            var newEmployee = await storage.GetByIdAsync(employee.Id);
             Assert.NotEqual(newEmployee.FirstOrDefault(c => c.Id == employee.Id), employee);
         }
     }
