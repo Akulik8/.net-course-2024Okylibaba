@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage : IStorage<Employee, List<Employee>>
+    public class EmployeeStorage : IEmployeeStorage
     {
         private readonly BankSystemDbContext _bankSystemDbContext;
 
@@ -36,10 +36,10 @@ namespace BankSystem.Data.Storages
             }
         }
 
-        public async Task UpdateAsync(Guid id, Employee newEmployee) 
+        public async Task UpdateAsync(Guid id, Employee newEmployee)
         {
             var employee = await _bankSystemDbContext.Employees
-                .FirstOrDefaultAsync(e => e.Id == newEmployee.Id);
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (employee != null)
             {
@@ -81,10 +81,22 @@ namespace BankSystem.Data.Storages
 
             query = query
                 .OrderBy(x => x.Surname)
-                .Skip((pageNumber - 1) * pageSize)
+                //.Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
 
             return await query.ToListAsync();
         }
+
+        public async Task<Employee> GetEmployeeByIdAsync(Guid id)
+        {
+            var employee = await _bankSystemDbContext.Employees.FirstOrDefaultAsync(e => e.Id == id);
+            if (employee != null)
+            {
+                return employee;
+            }
+
+            return new Employee();
+        }
+
     }
 }

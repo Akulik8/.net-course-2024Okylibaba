@@ -1,8 +1,12 @@
-﻿using BankSystem.App.Interfaces;
+﻿using AutoMapper;
+using BankSystem.App.DTOs;
+using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
 using BankSystem.App.Services.Exceptions;
+using BankSystem.Data;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,55 +17,68 @@ namespace BankSystem.App.Tests
 {
     public class EmployeeServiceTests
     {
+        private readonly IEmployeeStorage _employeeStorage;
+        private readonly IEmployeeService _employeeService;
+        private readonly TestDataGenerator _testDataGenerator;
+        private readonly IMapper _mapper;
+
+        public EmployeeServiceTests()
+        {
+            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
+                .UseNpgsql("Host=localhost;Port=5434;Username=postgres;Password=mysecretpassword;Database=local")
+                .Options;
+
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<ClientProfile>();
+            });
+
+            _mapper = mapperConfig.CreateMapper();
+            _employeeStorage = new EmployeeStorage(new Data.BankSystemDbContext(options));
+            _employeeService = new EmployeeService(_employeeStorage, _mapper);
+            _testDataGenerator = new TestDataGenerator();
+        }
+
+
         [Fact]
         public async Task AddEmployeePositiveTest()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
-            var employeeService = new EmployeeService(storage);
-            var testDataGenerator = new TestDataGenerator();
-            var employees = testDataGenerator.GenerateEmployees(10);
+            var employees = _testDataGenerator.GenerateEmployees(10);
 
             // Act
             foreach (var employee in employees)
             {
-                await employeeService.AddEmployeeAsync(employee);
+                await _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(employee));
             }
 
             Employee expectedEmployee = employees[0];
 
             // Assert
-            Assert.Contains(expectedEmployee, await storage.GetAsync(100,1,null));
+            Assert.Contains(expectedEmployee, await _employeeStorage.GetAsync(100,1,null));
         }
 
         [Fact]
         public async Task AddEmployeeThrowsPersonAlreadyExistsException()
         {
             // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
-            var employeeService = new EmployeeService(storage);
-            var testDataGenerator = new TestDataGenerator();
-            var employees = testDataGenerator.GenerateEmployees(10);
+            var employees = _testDataGenerator.GenerateEmployees(10);
 
             // Act
             foreach (var employee in employees)
             {
-                await employeeService.AddEmployeeAsync(employee);
+                await _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(employee));
             }
 
             Employee expectedEmployee = employees[0];
 
             // Assert
-            await Assert.ThrowsAsync<PersonAlreadyExistsException>(() => employeeService.AddEmployeeAsync(expectedEmployee));
+            await Assert.ThrowsAsync<PersonAlreadyExistsException>(() => _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(expectedEmployee)));
         }
 
         [Fact]
         public async Task AddEmployeeThrowsPersonTooYoungException()
         {
-            // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
-            var employeeService = new EmployeeService(storage);
-
             // Act
             Employee employee = new Employee
             {
@@ -71,16 +88,12 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            await Assert.ThrowsAsync<PersonTooYoungException>(() => employeeService.AddEmployeeAsync(employee));
+            await Assert.ThrowsAsync<PersonTooYoungException>(() => _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(employee)));
         }
 
         [Fact]
         public async Task AddEmployeeThrowsNoPassportException()
         {
-            // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
-            var employeeService = new EmployeeService(storage);
-
             // Act
             Employee employee = new Employee
             {
@@ -90,16 +103,12 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            await Assert.ThrowsAsync<NoPassportException>(() => employeeService.AddEmployeeAsync(employee));
+            await Assert.ThrowsAsync<NoPassportException>(() => _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(employee)));
         }
 
         [Fact]
         public async Task UpdateEmployeePositivTest()
         {
-            // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
-            var employeeService = new EmployeeService(storage);
-
             var employee = new Employee
             {
                 Id = new Guid(),
@@ -115,7 +124,7 @@ namespace BankSystem.App.Tests
                 DateStartWork = new DateOnly(2020, 1, 1)
             };
 
-            await storage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee);
 
             var updatedEmployee = new Employee()
             {
@@ -133,10 +142,10 @@ namespace BankSystem.App.Tests
             };
 
             // Act
-            await employeeService.UpdateEmployeeAsync(updatedEmployee);
+            await _employeeService.UpdateEmployeeAsync(employee.Id, _mapper.Map<EmployeeDto>(updatedEmployee));
 
             // Assert
-            var employees = await storage.GetByIdAsync(employee.Id);
+            var employees = await _employeeStorage.GetByIdAsync(employee.Id);
             var myEmployee = employees.LastOrDefault(e => e.Id == employee.Id);
 
             Assert.Equal(myEmployee.Id, updatedEmployee.Id);
@@ -145,10 +154,6 @@ namespace BankSystem.App.Tests
         [Fact]
         public async Task UpdateEmployeeThrowNotFoundException()
         {
-            // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
-            var employeeService = new EmployeeService(storage);
-
             // Act
             var newEmployee = new Employee
             {
@@ -164,16 +169,12 @@ namespace BankSystem.App.Tests
             };
 
             // Assert
-            await Assert.ThrowsAsync<NotFoundException>(() => employeeService.UpdateEmployeeAsync(newEmployee));
+            await Assert.ThrowsAsync<NotFoundException>(() => _employeeService.UpdateEmployeeAsync(newEmployee.Id, _mapper.Map<EmployeeDto>(newEmployee)));
         }
 
         [Fact]
         public async Task GetEmployeesPositiveTest()
         {
-            // Arrange
-            IStorage<Employee, List<Employee>> storage = new EmployeeStorage(new Data.BankSystemDbContext());
-            var employeeService = new EmployeeService(storage);
-
             var employee1 = new Employee
             {
                 Name = "Иван",
@@ -216,34 +217,25 @@ namespace BankSystem.App.Tests
                 DateStartWork = new DateOnly(2020, 1, 1)
             };
 
-            await employeeService.AddEmployeeAsync(employee1);
-            await employeeService.AddEmployeeAsync(employee2);
-            await employeeService.AddEmployeeAsync(employee3);
+            await _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(employee1));
+            await _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(employee2));
+            await _employeeService.AddEmployeeAsync(_mapper.Map<EmployeeDto>(employee3));
 
             // Act
-            var resultByName = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Name == "Иван");
-            var resultBySurname = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Surname == "Петров");
-            var resultByPhone = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.PhoneNumber == "1111222233");
-            var resultByPassport = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Passport == "2345 678901");
-            var resultByDateRange = await employeeService.GetEmployeesByFilterAsync(100, 1, с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
+            var resultByName = await _employeeService.FindEmployeeAsync(name: "Иван");
+            var resultBySurname = await _employeeService.FindEmployeeAsync(surname: "Петров");
+            var resultByPhone = await _employeeService.FindEmployeeAsync(phoneNumber: "1111222233");
+            var resultByPassport = await _employeeService.FindEmployeeAsync(pasNumber: "2345 678901");
 
 
             // Assert 
-            Assert.Single(resultByName);
-            Assert.Contains(employee1, resultByName);
+            Assert.Equal(_mapper.Map<EmployeeDto>(employee1), resultByName);
 
-            Assert.Single(resultBySurname);
-            Assert.Contains(employee2, resultBySurname);
+            Assert.Equal(_mapper.Map<EmployeeDto>(employee2), resultBySurname);
 
-            Assert.Single(resultByPhone);
-            Assert.Contains(employee3, resultByPhone);
+            Assert.Equal(_mapper.Map<EmployeeDto>(employee3), resultByPhone);
 
-            Assert.Single(resultByPassport);
-            Assert.Contains(employee2, resultByPassport);
-
-            Assert.Equal(2, resultByDateRange.Count);
-            Assert.Contains(employee1, resultByDateRange);
-            Assert.Contains(employee2, resultByDateRange);
+            Assert.Equal(_mapper.Map<EmployeeDto>(employee2), resultByPassport);
         }
     }
 }

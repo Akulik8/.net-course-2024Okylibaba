@@ -56,7 +56,7 @@ namespace BankSystem.Data.Storages
         public async Task UpdateAsync(Guid id, Client newClient)
         {
             var client = await _bankSystemDbContext.Clients
-                   .FirstOrDefaultAsync(c => c.Id == newClient.Id);
+                   .FirstOrDefaultAsync(c => c.Id == id);
             if (client != null)
             {
                 client.Name = newClient.Name;
@@ -136,6 +136,16 @@ namespace BankSystem.Data.Storages
                 _bankSystemDbContext.Accounts.Remove(account);
                 await _bankSystemDbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<Client> GetClientByIdAsync(Guid id)
+        {
+            Client? client = await _bankSystemDbContext.Clients.FirstOrDefaultAsync(a => a.Id == id);
+
+            if (client != null)
+                return client;
+
+            return new Client();
         }
     }
 }

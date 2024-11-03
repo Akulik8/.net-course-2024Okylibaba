@@ -1,6 +1,9 @@
-﻿using BankSystem.App.Interfaces;
+﻿using AutoMapper;
+using BankSystem.App.DTOs;
+using BankSystem.App.Interfaces;
 using BankSystem.App.Services.Exceptions;
 using BankSystem.Domain.Models;
+using Bogus.DataSets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,26 +15,32 @@ using System.Threading.Tasks;
 
 namespace BankSystem.App.Services
 {
-    public class ClientService
+    public class ClientService: IClientService
     {
         private readonly IClientStorage _clientStorage;
+        private readonly IMapper _mapper;
 
-        public ClientService(IClientStorage clientStorage)
+        public ClientService(IClientStorage clientStorage, IMapper mapper)
         {
             _clientStorage = clientStorage;
+            _mapper = mapper;
         }
 
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-        public async Task<Dictionary<Client, List<Account>>> GetAsync(Client client)
+        public async Task<Dictionary<Client, List<Account>>> GetAsync(Guid clientId)
         {
-            return await _clientStorage.GetByIdAsync(client.Id);
+            return await _clientStorage.GetByIdAsync(clientId);
         }
 
-        public async Task AddClientAsync(Client client)
+        public async Task AddClientAsync(ClientDto clientDto)
         {
-            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
-            if (existingClient.Any())
+            var client = _mapper.Map<Client>(clientDto);
+
+            var clients = await _clientStorage.GetAsync(100, 1, null);
+            var clientsDto = clients.Select(_mapper.Map<ClientDto>);
+
+            if (clientsDto.Where(x => x.PasNumber == clientDto.PasNumber).Count() > 0)
                 throw new PersonAlreadyExistsException("Этот клиент уже есть.");
 
             DateTime today = DateTime.Today;
@@ -45,25 +54,29 @@ namespace BankSystem.App.Services
             await _clientStorage.AddAsync(client);
         }
 
-        public async Task RemoveClientAsync(Client client)
+        public async Task RemoveClientAsync(Guid id)
         {
-            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
+            
+            var existingClient = await _clientStorage.GetByIdAsync(id);
             if (!existingClient.Any())
                 throw new NotFoundException("Клиент не найден.");
 
-            await _clientStorage.DeleteAsync(client.Id);
+            await _clientStorage.DeleteAsync(id);
         }
 
-        public async Task UpdateClientAsync(Client newClient)
+        public async Task UpdateClientAsync(Guid id, ClientDto newClientDto)
         {
-            var existingClient = await _clientStorage.GetByIdAsync(newClient.Id);
-            if (!existingClient.Any())
+            var newClient = _mapper.Map<Client>(newClientDto);
+
+            var existingClient = await _clientStorage.GetClientByIdAsync(id);
+
+            if (existingClient is null)
                 throw new NotFoundException("Клиент не найден.");
 
             if (newClient == null)
                 throw new Exception("Нет сведений о новом клиенте.");
 
-            await _clientStorage.UpdateAsync(newClient.Id, newClient);
+            await _clientStorage.UpdateAsync(id, newClient);
         }
 
         public async Task AddAccountToClientAsync(Client client, Account account)
@@ -121,9 +134,27 @@ namespace BankSystem.App.Services
             await _clientStorage.DeleteAccountAsync(account.Id);
         }
 
-        public async Task<List<Client>> GetAsync(int pageSize, int pageNumber, Expression<Func<Client, bool>>? filter)
+        public async Task<List<ClientDto>> GetAsync(int pageSize, int pageNumber, FindClientDto clientDto)
         {
-            return await _clientStorage.GetAsync(pageSize, pageNumber, filter);
+            Expression<Func<Client, bool>>? filter = client =>
+            (string.IsNullOrEmpty(clientDto.Name) || client.Name.Contains(clientDto.Name)) &&
+            (string.IsNullOrEmpty(clientDto.Surname) || client.Surname.Contains(clientDto.Surname)) &&
+            (string.IsNullOrEmpty(clientDto.Address) || client.Address.Contains(clientDto.Address)) &&
+            (string.IsNullOrEmpty(clientDto.PasNumber) || client.Passport.Equals(clientDto.PasNumber)) &&
+            (clientDto.Date == null|| client.Date == clientDto.Date);
+
+
+            List<Client> clients = await _clientStorage.GetAsync(pageSize, pageNumber, filter);
+
+            return clients.Select(_mapper.Map<ClientDto>).ToList();
+        }
+
+        public async Task<ClientDto> GetClientAsync(Guid Clientid)
+        {
+            var client = await _clientStorage.GetClientByIdAsync(Clientid);
+
+
+            return _mapper.Map<ClientDto>(client);
         }
     }
 }

@@ -11,6 +11,9 @@ namespace BankSystem.Data
 {
     public class BankSystemDbContext : DbContext
     {
+        public BankSystemDbContext(DbContextOptions<BankSystemDbContext> options) : base(options)
+        { }
+
         public DbSet<Client> Clients => Set<Client>();
         public DbSet<Employee> Employees => Set<Employee>();
         public DbSet<Account> Accounts => Set<Account>();
@@ -26,6 +29,7 @@ namespace BankSystem.Data
         {
             optionsBuilder.UseNpgsql("Host=localhost; Port = 5432; Database = bank_db; Username = postgres; Password = 2616");
         }
+
 
     }
 }
