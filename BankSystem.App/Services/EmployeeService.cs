@@ -1,8 +1,11 @@
-﻿using BankSystem.App.Interfaces;
+﻿using AutoMapper;
+using BankSystem.App.DTOs;
+using BankSystem.App.Interfaces;
 using BankSystem.App.Services.Exceptions;
 using BankSystem.Domain.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -11,25 +14,32 @@ using System.Threading.Tasks;
 
 namespace BankSystem.App.Services
 {
-    public class EmployeeService
+    public class EmployeeService: IEmployeeService
     {
-        private readonly IStorage<Employee, List<Employee>> _employeeStorage;
+        private readonly IEmployeeStorage _employeeStorage;
+        private readonly IMapper _mapper;
 
-        public EmployeeService(IStorage<Employee, List<Employee>> employeeStorage)
+        public EmployeeService(IEmployeeStorage employeeStorage, IMapper mapper)
         {
             _employeeStorage = employeeStorage;
+            _mapper = mapper;
         }
 
-        public async Task<List<Employee>> GetAsync(Employee employee)
+        public async Task<List<Employee>> GetAsync(Guid id)
         {
-            return await _employeeStorage.GetByIdAsync(employee.Id);
+            return await _employeeStorage.GetByIdAsync(id);
         }
 
-        public async Task AddEmployeeAsync(Employee employee)
+        public async Task<EmployeeDto> GetEmployeeAsync(Guid id)
         {
-            var existingEmployee = await _employeeStorage.GetByIdAsync(employee.Id);
-            if (existingEmployee.Any())
-                throw new PersonAlreadyExistsException("Этот сотрудник уже есть.");
+            var employee = await _employeeStorage.GetEmployeeByIdAsync(id);
+
+            return _mapper.Map<EmployeeDto>(employee);
+        }
+
+        public async Task AddEmployeeAsync(EmployeeDto employeeDto)
+        {
+            var employee = _mapper.Map<Employee>(employeeDto);
 
             DateTime today = DateTime.Today;
             int age = (today.Year - employee.Date.Year) - (today.DayOfYear < employee.Date.DayOfYear ? 1 : 0);
@@ -41,29 +51,44 @@ namespace BankSystem.App.Services
             await _employeeStorage.AddAsync(employee);
         }
 
-        public async Task RemoveClientAsync(Employee employee)
+        public async Task RemoveEmployeeAsync(Guid id)
         {
-            var existingEmployee = await _employeeStorage.GetByIdAsync(employee.Id);
+            var existingEmployee = await _employeeStorage.GetByIdAsync(id);
             if (!existingEmployee.Any())
                 throw new NotFoundException("Сотрудник не найден.");
 
-            await _employeeStorage.DeleteAsync(employee.Id);
+            await _employeeStorage.DeleteAsync(id);
         }
 
-        public async Task UpdateEmployeeAsync(Employee newEmployee)
+        public async Task UpdateEmployeeAsync(Guid id, EmployeeDto newEmployeeDto)
         {
-            var existingEmployee = await _employeeStorage.GetByIdAsync(newEmployee.Id);
+
+
+            var existingEmployee = await _employeeStorage.GetByIdAsync(id);
             if (!existingEmployee.Any())
                 throw new NotFoundException("Сотрудник не найден.");
-            if (newEmployee == null)
+
+            if (newEmployeeDto == null)
                 throw new Exception("Нет сведений о новом сотруднике.");
 
-            await _employeeStorage.UpdateAsync(newEmployee.Id, newEmployee);
+            var newEmployee = _mapper.Map<Employee>(newEmployeeDto);
+
+            await _employeeStorage.UpdateAsync(id, newEmployee);
         }
 
-        public async Task<List<Employee>> GetEmployeesByFilterAsync(int pageSize, int pageNumber, Expression<Func<Employee, bool>>? filter)
+        public async Task<List<EmployeeDto>> GetEmployeesByFilterAsync(Expression<Func<Employee, bool>>? filter, int pageSize = 1, int pageNumber = 10)
         {
-            return await _employeeStorage.GetAsync(pageSize, pageNumber, filter);
+            var employees = await _employeeStorage.GetAsync(pageSize, pageNumber, filter);
+
+            return employees.Select(_mapper.Map<EmployeeDto>).ToList();
+        }
+
+        public async Task<EmployeeDto> FindEmployeeAsync(string? name, string? surname, string? phoneNumber, string? pasNumber)
+        {
+            var employees = await _employeeStorage.GetEmployeesByParametersAsync(name, surname, phoneNumber, pasNumber);
+
+            var employeeDto = _mapper.Map<EmployeeDto>(employees.FirstOrDefault());
+            return employeeDto;
         }
     }
 }
