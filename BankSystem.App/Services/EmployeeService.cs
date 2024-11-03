@@ -76,19 +76,22 @@ namespace BankSystem.App.Services
             await _employeeStorage.UpdateAsync(id, newEmployee);
         }
 
-        public async Task<List<EmployeeDto>> GetEmployeesByFilterAsync(Expression<Func<Employee, bool>>? filter, int pageSize = 1, int pageNumber = 10)
+        public async Task<List<EmployeeDto>> GetEmployeesByFilterAsync(FindEmployeeDto employeeDto, int pageSize, int pageNumber)
         {
-            var employees = await _employeeStorage.GetAsync(pageSize, pageNumber, filter);
+            Expression<Func<Employee, bool>>? filter = employee =>
+                (string.IsNullOrEmpty(employeeDto.Name) || employee.Name.Contains(employeeDto.Name)) &&
+                (string.IsNullOrEmpty(employeeDto.Surname) || employee.Surname.Contains(employeeDto.Surname)) &&
+                (!employeeDto.Date.HasValue || employee.Date == employeeDto.Date.Value) &&
+                (!employeeDto.Salary.HasValue || employee.Salary == employeeDto.Salary.Value) &&
+                (string.IsNullOrEmpty(employeeDto.Position) || employee.Position.Contains(employeeDto.Position)) &&
+                (string.IsNullOrEmpty(employeeDto.PhoneNumber) || employee.PhoneNumber.Contains(employeeDto.PhoneNumber)) &&
+                (string.IsNullOrEmpty(employeeDto.PasNumber) || employee.Passport.Equals(employeeDto.PasNumber)) &&
+                (string.IsNullOrEmpty(employeeDto.Address) || employee.Address.Contains(employeeDto.Address));
+
+
+            List<Employee> employees = await _employeeStorage.GetAsync(pageSize, pageNumber, filter);
 
             return employees.Select(_mapper.Map<EmployeeDto>).ToList();
-        }
-
-        public async Task<EmployeeDto> FindEmployeeAsync(string? name, string? surname, string? phoneNumber, string? pasNumber)
-        {
-            var employees = await _employeeStorage.GetEmployeesByParametersAsync(name, surname, phoneNumber, pasNumber);
-
-            var employeeDto = _mapper.Map<EmployeeDto>(employees.FirstOrDefault());
-            return employeeDto;
         }
     }
 }

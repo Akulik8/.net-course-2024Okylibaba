@@ -15,7 +15,6 @@ namespace BankSystem.App.Interfaces
         Task AddEmployeeAsync(EmployeeDto employeeDto);
         Task UpdateEmployeeAsync(Guid id, EmployeeDto employeeDto);
         Task RemoveEmployeeAsync(Guid id);
-        Task<List<EmployeeDto>> GetEmployeesByFilterAsync(Expression<Func<Employee, bool>>? filter, int pageSize  = 1, int pageNumber = 10);
-        Task<EmployeeDto> FindEmployeeAsync(string? name, string? surname, string? phoneNumber, string? pasNumber);
+        Task<List<EmployeeDto>> GetEmployeesByFilterAsync(FindEmployeeDto findEmployeeDto, int pageSize = 100, int pageNumber = 1);
     }
 }

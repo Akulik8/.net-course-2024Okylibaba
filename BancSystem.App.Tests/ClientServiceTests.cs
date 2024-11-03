@@ -1,9 +1,13 @@
-﻿using BankSystem.App.Interfaces;
+﻿using AutoMapper;
+using BankSystem.App.DTOs;
+using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
 using BankSystem.App.Services.Exceptions;
+using BankSystem.Data;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 using Bogus;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,99 +21,104 @@ namespace BankSystem.App.Tests
 {
     public class ClientServiceTests
     {
+        private readonly IClientStorage _clientStorage;
+        private readonly IClientService _clientService;
+        private readonly TestDataGenerator _testDataGenerator;
+        private readonly IMapper _mapper;
+
+        public ClientServiceTests()
+        {
+            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
+                .UseNpgsql("Host=localhost;Port=5434;Username=postgres;Password=mysecretpassword;Database=local")
+                .Options;
+
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<ClientProfile>();
+            });
+
+            _mapper = mapperConfig.CreateMapper();
+            _clientStorage = new ClientStorage(new Data.BankSystemDbContext(options));
+            _clientService = new ClientService(_clientStorage, _mapper);
+            _testDataGenerator = new TestDataGenerator();
+        }
+
         [Fact]
         public async Task AddClientPositivTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-            var testDataGenerator = new TestDataGenerator();
-            var clients = testDataGenerator.GenerateClients(10);
+            var clients = _testDataGenerator.GenerateClients(10);
 
             // Act
-            foreach (var client in clients)
+            foreach (ClientDto client in clients.Select(_mapper.Map<ClientDto>).ToList())
             {
-               await clientService.AddClientAsync(client);
+               await _clientService.AddClientAsync(client);
             }
 
-            Client expectedClient = clients[0];
+            ClientDto expectedClient = _mapper.Map<ClientDto>(clients[0]);
+
+            var storedClients = await _clientStorage.GetAsync(1000, 1, null);
 
             // Assert
-            Assert.Contains(expectedClient, await storage.GetAsync(1000,1,null));
+            Assert.Contains(expectedClient.PasNumber, storedClients.Select(_mapper.Map<ClientDto>).Select(x => x.PasNumber));
         }
 
         [Fact]
         public async Task AddClientThrowsPersonAlreadyExistsException()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-            var testDataGenerator = new TestDataGenerator();
-            var clients = testDataGenerator.GenerateClients(10);
+            var clients = _testDataGenerator.GenerateClients(10);
 
             // Act
-            foreach (var client in clients)
+            foreach (ClientDto client in clients.Select(_mapper.Map<ClientDto>).ToList())
             {
-                await clientService.AddClientAsync(client);
+                await _clientService.AddClientAsync(client);
             }
 
-            Client expectedClient = clients[0];
+            ClientDto expectedClient = _mapper.Map<ClientDto>(clients[0]);
 
             // Assert
-            await Assert.ThrowsAsync<PersonAlreadyExistsException>(() => clientService.AddClientAsync(expectedClient));
+            await Assert.ThrowsAsync<PersonAlreadyExistsException>(() => _clientService.AddClientAsync(expectedClient));
         }
 
         [Fact]
         public async Task AddClientThrowsPersonTooYoungException()
         {
-            // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-
             // Act
-            Client client = new Client
+            ClientDto client = new ClientDto
             {
-                Name = "Лилиан",
-                Surname = "Галатонов",
+                FullName = "Лилиан Галатонов",
                 Date = new DateOnly(2010, 1, 1)
             };
 
             // Assert
-            await Assert.ThrowsAsync<PersonTooYoungException>(() => clientService.AddClientAsync(client));
+            await Assert.ThrowsAsync<PersonTooYoungException>(() => _clientService.AddClientAsync(client));
         }
 
         [Fact]
         public async Task AddClientThrowsNoPassportException()
         {
-            // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-
             // Act
-            Client client = new Client
+            ClientDto client = new ClientDto
             {
-                Name = "Лилиан",
-                Surname = "Галатонов",
-                Date = new DateOnly(2000, 1, 1)
+                FullName = "Лилиан Галатонов",
+                Date = new DateOnly(2003, 1, 1)
             };
 
             // Assert
-            await Assert.ThrowsAsync<NoPassportException>(() => clientService.AddClientAsync(client));
+            await Assert.ThrowsAsync<NoPassportException>(() => _clientService.AddClientAsync(client));
         }
 
         [Fact]
         public async Task AddAccountToClientPositivTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-            var testDataGenerator = new TestDataGenerator();
-            var clients = testDataGenerator.GenerateClients(10);
+            var clients = _testDataGenerator.GenerateClients(10);
 
             // Act
-            foreach (var client in clients)
+            foreach (Client client in clients)
             {
-                await clientService.AddClientAsync(client);
+                await _clientService.AddClientAsync(_mapper.Map<ClientDto>(client));
             }
 
             var account = new Account
@@ -121,29 +130,25 @@ namespace BankSystem.App.Tests
 
             var firstClient = clients[0];
 
-            await clientService.AddAccountToClientAsync(firstClient, account);
+            await _clientService.AddAccountToClientAsync(firstClient, account);
                
-            var dictionaryClient = await storage.GetByIdAsync(firstClient.Id);
-            var accounts = dictionaryClient.Values;
-            var newAccount = accounts.LastOrDefault();
+            var dictionaryClient = await _clientStorage.GetByIdAsync(firstClient.Id);
+            List<Account> accounts = dictionaryClient[firstClient];
 
             // Assert
-            Assert.Contains(newAccount, a => a.CurrencyName == "Рубль РФ");
+            Assert.Contains(account.CurrencyName, accounts.Select(x => x.CurrencyName));
         }
 
         [Fact]
         public async Task AddAccountToClientNotFoundException()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-            var testDataGenerator = new TestDataGenerator();
-            var clients = testDataGenerator.GenerateClients(10);
+            var clients = _testDataGenerator.GenerateClients(10);
 
             // Act
-            foreach (var client in clients)
+            foreach (ClientDto client in clients.Select(_mapper.Map<ClientDto>).ToList())
             {
-                await clientService.AddClientAsync(client);
+                await _clientService.AddClientAsync(client);
             }
 
             var account = new Account
@@ -153,20 +158,17 @@ namespace BankSystem.App.Tests
                 CurrencyName = "Рубль РФ"
             };
 
-            Client firstClient = clients[0];
-            await clientService.AddClientAsync(firstClient);
+            ClientDto firstClient = _mapper.Map<ClientDto>(clients[0]);
+            await _clientService.AddClientAsync(firstClient);
 
             // Assert
-            await Assert.ThrowsAsync<NotFoundException>(() => clientService.AddAccountToClientAsync(firstClient, account));
+            await Assert.ThrowsAsync<NotFoundException>(() => _clientService.AddAccountToClientAsync(clients[0], account));
         }
 
         [Fact]
         public async Task DebitingMoneyFromAccountPositivTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-            var testDataGenerator = new TestDataGenerator();
             ConcurrentDictionary<Client, List<Account>> _cliensDictionary = new ConcurrentDictionary<Client, List<Account>>();
             var cancellationtTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
@@ -175,18 +177,18 @@ namespace BankSystem.App.Tests
             {
                 while (!cancellationtTokenSource.Token.IsCancellationRequested)
                 {
-                    var clients = testDataGenerator.GenerateClients(10);
+                    var clients = _testDataGenerator.GenerateClients(10);
 
                     foreach (var client in clients)
                     {
-                        await clientService.AddClientAsync(client);
+                        await _clientService.AddClientAsync(_mapper.Map<ClientDto>(client));
 
                         foreach (var account in client.Accounts)
                         {
                             if (account.CurrencyName == "Доллар США")
                             {
                                 account.Amount = 50;
-                                await clientService.EditAccountAsync(account);
+                                await _clientService.EditAccountAsync(account);
                             }
                         }
                         _cliensDictionary.TryAdd(client, client.Accounts.ToList());
@@ -200,14 +202,14 @@ namespace BankSystem.App.Tests
 
             foreach(var client  in _cliensDictionary.Keys)
             {
-                tasks.Add(Task.Run(() => clientService.DebitingMoneyFromAccount(client, client.Accounts.FirstOrDefault(), cashToDebit)));
+                tasks.Add(Task.Run(() => _clientService.DebitingMoneyFromAccount(client, client.Accounts.FirstOrDefault(), cashToDebit)));
             }
 
             await Task.WhenAll(tasks);
 
             foreach (var client in _cliensDictionary)
             {
-                var clientWithAccount = await clientService.GetAsync(client.Key);
+                var clientWithAccount = await _clientService.GetAsync(client.Key.Id);
                 var updatedAccount = clientWithAccount.Values.FirstOrDefault();
                 Assert.Equal(40, updatedAccount.FirstOrDefault().Amount);
             }
@@ -217,15 +219,12 @@ namespace BankSystem.App.Tests
         public async Task EditAccountPositivTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
-            var testDataGenerator = new TestDataGenerator();
-            var clients = testDataGenerator.GenerateClients(10);
+            var clients = _testDataGenerator.GenerateClients(10);
 
             // Act
             foreach (var client in clients)
             {
-                await clientService.AddClientAsync(client);
+                await _clientStorage.AddAsync(client);
             }
 
             Client firstClient = clients[0];
@@ -239,7 +238,7 @@ namespace BankSystem.App.Tests
                 CurrencyName = "Евро"
             };
 
-            await clientService.AddAccountToClientAsync(firstClient, oldAccount);
+            await _clientService.AddAccountToClientAsync(firstClient, oldAccount);
             var newAccount = new Account
             {
                 Id = oldAccount.Id,
@@ -249,9 +248,9 @@ namespace BankSystem.App.Tests
                 CurrencyName = "Рубль РФ"
             };
 
-            await clientService.EditAccountAsync(newAccount);
+            await _clientService.EditAccountAsync(newAccount);
 
-            var newClient = await storage.GetByIdAsync(firstClient.Id);
+            var newClient = await _clientStorage.GetByIdAsync(firstClient.Id);
             var accounts = newClient.Values;
             var updatedAccount = accounts.FirstOrDefault();
             var myAccount = updatedAccount.First(a => a.Id.Equals(newAccount.Id));
@@ -264,8 +263,6 @@ namespace BankSystem.App.Tests
         public async Task GetClientsPositiveTest()
         {
             // Arrange
-            IClientStorage storage = new ClientStorage(new Data.BankSystemDbContext());
-            var clientService = new ClientService(storage);
             var client1 = new Client
             {
                 Name = "Иван",
@@ -296,16 +293,16 @@ namespace BankSystem.App.Tests
                 Address = "-----"
             };
 
-            await clientService.AddClientAsync(client1);
-            await clientService.AddClientAsync(client2);
-            await clientService.AddClientAsync(client3);
+            await _clientService.AddClientAsync(_mapper.Map<ClientDto>(client1));
+            await _clientService.AddClientAsync(_mapper.Map<ClientDto>(client2));
+            await _clientService.AddClientAsync(_mapper.Map<ClientDto>(client3));
 
             // Act
-            var resultByName = await clientService.GetAsync(100,1,с => с.Name == "Иван");
-            var resultBySurname = await clientService.GetAsync(100, 1, с => с.Surname == "Петров");
-            var resultByPhone = await clientService.GetAsync(100, 1, с => с.PhoneNumber == "1111222233");
-            var resultByPassport = await clientService.GetAsync(100, 1, с => с.Passport == "2345 678901");
-            var resultByDateRange = await clientService.GetAsync(100, 1, с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
+            var resultByName = await _clientStorage.GetAsync(100,1,с => с.Name == "Иван");
+            var resultBySurname = await _clientStorage.GetAsync(100, 1, с => с.Surname == "Петров");
+            var resultByPhone = await _clientStorage.GetAsync(100, 1, с => с.PhoneNumber == "1111222233");
+            var resultByPassport = await _clientStorage.GetAsync(100, 1, с => с.Passport == "2345 678901");
+            var resultByDateRange = await _clientStorage.GetAsync(100, 1, с => с.Date >= new DateOnly(1980, 1, 1) && с.Date <= new DateOnly(1995, 12, 31));
 
 
             // Assert 

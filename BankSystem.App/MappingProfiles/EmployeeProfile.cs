@@ -35,6 +35,10 @@ namespace BankSystem.App.MappingProfiles
                 .ForMember(dest => dest.Bonus, opt => opt.MapFrom(src => 0))
                 .ForMember(dest => dest.Contract, opt => opt.MapFrom(src => "N/A"))
                 .ForMember(dest => dest.DateStartWork, opt => opt.MapFrom(src => DateOnly.FromDateTime(DateTime.Today)));
+
+            CreateMap<FindEmployeeDto, EmployeeDto>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name + ' ' + src.Surname));
+
         }
     }
 }

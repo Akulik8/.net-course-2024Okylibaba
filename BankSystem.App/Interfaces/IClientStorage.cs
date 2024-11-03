@@ -17,9 +17,5 @@ namespace BankSystem.App.Interfaces
         
         public Task DeleteAccountAsync(Guid id);
 
-        public Task<List<Client>> GetClientsByParametersAsync(string? name = null, string? surname = null,
-                                                                string? phoneNumber = null, string? pasNumber = null,
-                                                                DateOnly? date = null, int pageNumber = 1,
-                                                                int pageSize = 10, string sortBy = "Name");
     }
 }

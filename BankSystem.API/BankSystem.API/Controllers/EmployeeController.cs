@@ -49,9 +49,10 @@ namespace BankSystem.API.Controllers
         }
 
         [HttpGet("FindEmployee")]
-        public async Task<IActionResult> FindEmployee(string? name, string? surname, string? phoneNumber, string? pasNumber)
+        public async Task<IActionResult> FindEmployee([FromQuery] FindEmployeeDto findEmployeeDto)
         {
-            EmployeeDto response = await _employeeService.FindEmployeeAsync(name, surname, phoneNumber, pasNumber);
+            List<EmployeeDto> response = await _employeeService.GetEmployeesByFilterAsync(findEmployeeDto, 100, 1);
+
             if (response == null)
                 return NotFound();
 

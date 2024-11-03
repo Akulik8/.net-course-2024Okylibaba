@@ -1,6 +1,9 @@
+using AutoMapper;
 using BankSystem.App.DTOs;
 using BankSystem.App.Interfaces;
+using BankSystem.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq.Expressions;
 
 namespace BankSystem.API.Controllers
 {
@@ -48,9 +51,9 @@ namespace BankSystem.API.Controllers
         }
 
         [HttpGet("FindClient")]
-        public async Task<IActionResult> FindClient(string? name, string? surname, string? phoneNumber, string? pasNumber, DateOnly? date)
+        public async Task<IActionResult> FindClient([FromQuery] FindClientDto findClientDto)
         {
-            ClientDto response = await _clientService.FindClientAsync(name, surname, phoneNumber, pasNumber, date);
+            List<ClientDto> response = await _clientService.GetAsync(100, 1, findClientDto);
             if (response == null)
                 return NotFound();
 

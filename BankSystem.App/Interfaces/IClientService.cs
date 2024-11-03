@@ -22,8 +22,12 @@ namespace BankSystem.App.Interfaces
 
         public Task UpdateClientAsync(Guid id, ClientDto newClient);
 
-        public Task<ClientDto> FindClientAsync(string? name, string? surname, string? phoneNumber, string? pasNumber, DateOnly? date);
+        public Task<List<ClientDto>> GetAsync(int pageSize, int pageNumber, FindClientDto clientDto);
 
-        public Task<List<Client>> GetAsync(int pageSize, int pageNumber, Expression<Func<Client, bool>>? filter);
+        public Task AddAccountToClientAsync(Client client, Account account);
+
+        public Task EditAccountAsync(Account newAccount);
+
+        public Task DebitingMoneyFromAccount(Client client, Account account, decimal cash);
     }
 }

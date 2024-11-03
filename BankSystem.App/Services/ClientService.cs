@@ -3,6 +3,7 @@ using BankSystem.App.DTOs;
 using BankSystem.App.Interfaces;
 using BankSystem.App.Services.Exceptions;
 using BankSystem.Domain.Models;
+using Bogus.DataSets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,8 +37,10 @@ namespace BankSystem.App.Services
         {
             var client = _mapper.Map<Client>(clientDto);
 
-            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
-            if (existingClient.Any())
+            var clients = await _clientStorage.GetAsync(100, 1, null);
+            var clientsDto = clients.Select(_mapper.Map<ClientDto>);
+
+            if (clientsDto.Where(x => x.PasNumber == clientDto.PasNumber).Count() > 0)
                 throw new PersonAlreadyExistsException("Этот клиент уже есть.");
 
             DateTime today = DateTime.Today;
@@ -131,9 +134,19 @@ namespace BankSystem.App.Services
             await _clientStorage.DeleteAccountAsync(account.Id);
         }
 
-        public async Task<List<Client>> GetAsync(int pageSize, int pageNumber, Expression<Func<Client, bool>>? filter)
+        public async Task<List<ClientDto>> GetAsync(int pageSize, int pageNumber, FindClientDto clientDto)
         {
-            return await _clientStorage.GetAsync(pageSize, pageNumber, filter);
+            Expression<Func<Client, bool>>? filter = client =>
+            (string.IsNullOrEmpty(clientDto.Name) || client.Name.Contains(clientDto.Name)) &&
+            (string.IsNullOrEmpty(clientDto.Surname) || client.Surname.Contains(clientDto.Surname)) &&
+            (string.IsNullOrEmpty(clientDto.Address) || client.Address.Contains(clientDto.Address)) &&
+            (string.IsNullOrEmpty(clientDto.PasNumber) || client.Passport.Equals(clientDto.PasNumber)) &&
+            (clientDto.Date == null|| client.Date == clientDto.Date);
+
+
+            List<Client> clients = await _clientStorage.GetAsync(pageSize, pageNumber, filter);
+
+            return clients.Select(_mapper.Map<ClientDto>).ToList();
         }
 
         public async Task<ClientDto> GetClientAsync(Guid Clientid)
@@ -142,18 +155,6 @@ namespace BankSystem.App.Services
 
 
             return _mapper.Map<ClientDto>(client);
-        }
-
-        public async Task<ClientDto> FindClientAsync(string? name, string? surname, string? phoneNumber, string? pasNumber, DateOnly? date)
-        {
-            int pageNumber = 1;
-            int pageSize = 10;
-            string sortBy = "Name";
-
-            var clients = await _clientStorage.GetClientsByParametersAsync(name, surname, phoneNumber, pasNumber, date, pageNumber, pageSize, sortBy);
-
-            var clientsDto = _mapper.Map<ClientDto>(clients.FirstOrDefault());
-            return clientsDto;
         }
     }
 }

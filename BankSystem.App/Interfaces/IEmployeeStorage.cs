@@ -11,7 +11,5 @@ namespace BankSystem.App.Interfaces
     public interface IEmployeeStorage: IStorage<Employee, List<Employee>>
     {
         public Task<Employee> GetEmployeeByIdAsync(Guid id);
-        public Task<List<Employee>> GetEmployeesByParametersAsync(
-            string? name, string? surname, string? phoneNumber, string? pasNumber, int pageNumber = 1, int pageSize = 10, string sortBy = "Name");
     }
 }

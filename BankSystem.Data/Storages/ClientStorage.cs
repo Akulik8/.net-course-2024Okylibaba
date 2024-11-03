@@ -147,32 +147,5 @@ namespace BankSystem.Data.Storages
 
             return new Client();
         }
-
-        public async Task<List<Client>> GetClientsByParametersAsync(
-            string? name = null, string? surname = null,
-            string? phoneNumber = null, string? pasNumber = null,
-            DateOnly? date = null, int pageNumber = 1, int pageSize = 10, string sortBy = "Name")
-        {
-            var query = _bankSystemDbContext.Clients.AsQueryable();
-
-            if (!string.IsNullOrEmpty(name)) query = query.Where(c => c.Name.Contains(name));
-            if (!string.IsNullOrEmpty(surname)) query = query.Where(c => c.Surname.Contains(surname));
-            if (!string.IsNullOrEmpty(phoneNumber)) query = query.Where(c => c.PhoneNumber.Contains(phoneNumber));
-            if (!string.IsNullOrEmpty(pasNumber)) query = query.Where(c => c.Passport == pasNumber);
-            if (date.HasValue) query = query.Where(c => c.Date == date.Value);
-
-            if (sortBy == "Name")
-            {
-                query = query.OrderBy(c => c.Name);
-            }
-            else if (sortBy == "Date")
-            {
-                query = query.OrderBy(c => c.Date);
-            }
-           
-            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-
-            return await query.ToListAsync();
-        }
     }
 }
