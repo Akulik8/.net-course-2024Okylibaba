@@ -33,3 +33,6 @@ bld/
 *.sln.docstates
 .idea/
 logs/
+/BancSystem.App.Tests/App.config
+/BancSystem.App.Tests/Settings.settings
+/BankSystem.API/BankSystem.API/appsettings.json
