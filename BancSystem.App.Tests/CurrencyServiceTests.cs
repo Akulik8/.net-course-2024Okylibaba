@@ -15,11 +15,11 @@ namespace BankSystem.App.Tests
     public class CurrencyServiceTests
     {
         private readonly ITestOutputHelper _testOutput;
-        CurrencyService _currencyService;
+        private readonly CurrencyService _currencyService;
 
-        public CurrencyServiceTests(ITestOutputHelper _testOutput)
+        public CurrencyServiceTests(ITestOutputHelper testOutput)
         {
-            this._testOutput = _testOutput;
+            _testOutput = testOutput;
 
             _currencyService = new CurrencyService(Settings.Default.apiKey, Settings.Default.baseUrl);
         }
@@ -34,9 +34,25 @@ namespace BankSystem.App.Tests
                 Amount = 100
             };
 
-            CurrencyResponse currencyResponse = await _currencyService.GetCurrency(currencyData);
+            using (CancellationTokenSource tokenSource = new CancellationTokenSource())
+            {
+                var token = tokenSource.Token;
 
-            _testOutput.WriteLine(currencyResponse.Amount.ToString(), OutputLevel.Information);
+                try
+               {
+                    CurrencyResponse currencyResponse = await _currencyService.ConvertAsync(currencyData, token);
+
+                    _testOutput.WriteLine(currencyResponse.Amount.ToString(), OutputLevel.Information);
+                }
+                catch (Exception ex)
+                {
+                    if (ex is TaskCanceledException)
+                        _testOutput.WriteLine("Operation aborted");
+                    else
+                        _testOutput.WriteLine($"Failed to convert {ex.Message}");
+                }
+            }
+                
         }
 
     }

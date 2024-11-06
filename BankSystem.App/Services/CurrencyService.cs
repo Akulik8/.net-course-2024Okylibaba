@@ -16,7 +16,7 @@ namespace BankSystem.App.Services
             _baseUrl = baseUrl;
         }
 
-        public async Task<CurrencyResponse> GetCurrency(CurrencyData data)
+        public async Task<CurrencyResponse> ConvertAsync(CurrencyData data, CancellationToken token)
         {
             UriBuilder uriBuilder = new UriBuilder(_baseUrl);
 
@@ -31,8 +31,17 @@ namespace BankSystem.App.Services
             string finalUrl = uriBuilder.ToString();
             using (HttpClient client = new HttpClient())
             {
-                HttpResponseMessage responseMessage = await client.GetAsync(finalUrl);
+                if (token.IsCancellationRequested)
+                {
+                    token.ThrowIfCancellationRequested();
+                }
+
+                HttpResponseMessage responseMessage = await client.GetAsync(finalUrl, token);
+
+                responseMessage.EnsureSuccessStatusCode();
+
                 string message = await responseMessage.Content.ReadAsStringAsync();
+
 
                 return JsonConvert.DeserializeObject<CurrencyResponse>(message);
             }
